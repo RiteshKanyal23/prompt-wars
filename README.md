@@ -502,7 +502,7 @@ The suite covers:
 
 ### Phase gates
 
-Implementation is complete through the operator workflow. Gates **G0–G4** are signed off with evidence in [`docs/decision-log.md`](docs/decision-log.md). The remaining P8 QA items — final cross-device pass, timed rehearsal and demo recording — are tracked in [`phases.md`](phases.md).
+Implementation is complete through the operator workflow. Gates **G0–G7** are signed off with evidence in [`docs/decision-log.md`](docs/decision-log.md). The remaining P8 QA items — final cross-device pass, timed rehearsal and demo recording — are tracked in [`phases.md`](phases.md).
 
 ---
 
@@ -609,14 +609,13 @@ The architecture keeps the demo UI intact through this evolution: the repository
 │  │                        Dashboard · Admin · Track · TrackDetail · NotFound
 │  ├─ components/
 │  │  ├─ layout/            AppLayout, AdminLayout, Header, Footer, MobileNav, …
-│  │  ├─ ui/                Button, Card, Badge, Field, EmptyState, Skeleton, …
+│  │  ├─ ui/                Button, Card, Badge, Field, EmptyState, Skeleton, StatCard, …
 │  │  ├─ map/               LocationPicker, ReportMap (lazy Leaflet)
-│  │  ├─ charts/            Recharts wrappers
 │  │  ├─ reports/           PriorityBadge, StatusBadge, Timeline
 │  │  ├─ analysis/          Summary, factors, duplicates, hotspot cards
-│  │  ├─ dashboard/         KPIs, charts, Fix-first list, hotspot cards, brief modal
+│  │  ├─ dashboard/         KPIs, charts, Fix-first list, hotspot cards, brief modal, table
 │  │  └─ admin/             Queue, drawer, duplicate review, reports tab
-│  ├─ hooks/                Data, mutation, toast, focus-trap and draft hooks
+│  ├─ hooks/                Reports, mutations, toast, focus-trap and tablist hooks
 │  ├─ services/
 │  │  ├─ ai/                normalize · tfidf · classify · summarize · duplicates
 │  │  │                     priority · clusters · brief · pipeline
