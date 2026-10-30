@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Illustration of a broken footpath railing">
+  <rect width="640" height="420" fill="#425065"/>
+  <path d="M0 300h640v120H0z" fill="#55647a"/>
+  <path d="M0 286h640v14H0z" fill="#7c8ba0"/>
+  <g fill="#aab5c4">
+    <rect x="40" y="196" width="12" height="94" rx="4"/>
+    <rect x="150" y="196" width="12" height="94" rx="4"/>
+    <rect x="260" y="196" width="12" height="94" rx="4"/>
+    <rect x="470" y="196" width="12" height="94" rx="4"/>
+    <rect x="580" y="196" width="12" height="94" rx="4"/>
+  </g>
+  <path d="M40 214h232" stroke="#aab5c4" stroke-width="12" stroke-linecap="round"/>
+  <path d="M272 220l48-14 26 18" fill="none" stroke="#aab5c4" stroke-width="12" stroke-linecap="round"/>
+  <path d="M470 214h122" stroke="#aab5c4" stroke-width="12" stroke-linecap="round"/>
+  <g stroke="#e07b2a" stroke-width="7" stroke-linecap="round">
+    <path d="M346 206l18 22M364 206l-18 22"/>
+  </g>
+  <path d="M332 300h60" stroke="#2f3a4c" stroke-width="16" stroke-linecap="round"/>
+</svg>

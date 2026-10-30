@@ -15,6 +15,9 @@ import {
 import Container from '@/components/layout/Container';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
+import { useReports } from '@/hooks/useReports';
+import { useClusters } from '@/hooks/useClusters';
+import { OPEN_STATUSES, CATEGORY_MAP } from '@/lib/constants';
 
 const STAGES = [
   {
@@ -67,13 +70,6 @@ const CAPABILITIES = [
   },
 ];
 
-const STATS = [
-  { label: 'Reports captured', value: '—' },
-  { label: 'Hotspots found', value: '—' },
-  { label: 'Duplicates linked', value: '—' },
-  { label: 'P0 + P1 open', value: '—' },
-];
-
 const PIPELINE_STEPS = [
   'Normalise text',
   'Classify + summarise',
@@ -83,6 +79,39 @@ const PIPELINE_STEPS = [
 ];
 
 export default function Home() {
+  const { data: reports, loading, error, reload } = useReports();
+  const { clusters } = useClusters();
+
+  const openReports = reports.filter((report) => OPEN_STATUSES.includes(report.status));
+  const linkedDuplicates = reports.filter((report) => report.duplicateConfirmed);
+  const scored = reports.some((report) => report.priorityBand);
+  const p0p1Open = openReports.filter(
+    (report) => report.priorityBand === 'P0' || report.priorityBand === 'P1',
+  );
+  const topCluster = clusters[0] ?? null;
+  const topClusterMix = topCluster
+    ? Object.entries(topCluster.categories)
+        .sort((a, b) => b[1] - a[1])
+        .map(([key, count]) => `${CATEGORY_MAP[key]?.short ?? key} ${count}`)
+        .join(' · ')
+    : null;
+
+  const stats = [
+    { label: 'Reports captured', value: loading || error ? '—' : reports.length },
+    {
+      label: 'Hotspots found',
+      value: loading || error || clusters.length === 0 ? '—' : clusters.length,
+    },
+    {
+      label: 'Duplicates linked',
+      value: loading || error ? '—' : linkedDuplicates.length,
+    },
+    {
+      label: 'P0 + P1 open',
+      value: loading || error || !scored ? '—' : p0p1Open.length,
+    },
+  ];
+
   return (
     <>
       <section className="relative overflow-hidden bg-navy-900 text-white">
@@ -149,8 +178,8 @@ export default function Home() {
               </ol>
 
               <p className="mt-4 text-xs leading-5 text-slate-500">
-                Deterministic, browser-side and offline. The pipeline is wired in Phase 3; this
-                shell shows the contract, not fake output.
+                Deterministic, browser-side and offline. Every step runs over the stored text and
+                coordinates, so the same report always produces the same analysis.
               </p>
             </Card>
           </div>
@@ -159,7 +188,7 @@ export default function Home() {
 
       <section className="border-b border-slate-200 bg-white">
         <Container className="grid grid-cols-2 gap-6 py-8 sm:grid-cols-4">
-          {STATS.map((stat) => (
+          {stats.map((stat) => (
             <div key={stat.label}>
               <p className="text-3xl font-bold tabular-nums text-navy-900">{stat.value}</p>
               <p className="mt-1 text-xs font-medium uppercase tracking-wide text-slate-500">
@@ -170,8 +199,16 @@ export default function Home() {
         </Container>
         <Container className="pb-6">
           <p className="text-xs text-slate-500">
-            Numbers are deliberately blank until the 42-report seed lands in Phase 2. Nothing on this
-            page is hard-coded sample output.
+            {error ? (
+              <>
+                Sample data could not be loaded.{' '}
+                <button type="button" onClick={reload} className="font-semibold text-teal-700 hover:text-teal-600">
+                  Retry
+                </button>
+              </>
+            ) : (
+              'Counts come from the repository after the rules-v1 pipeline has run over the seed.'
+            )}
           </p>
         </Container>
       </section>
@@ -247,13 +284,18 @@ export default function Home() {
           <Card className="overflow-hidden">
             <div className="grid lg:grid-cols-[1fr_20rem]">
               <div className="card-pad">
-                <Badge tone="warning" dot>
-                  Hotspots arrive in Phase 6
+                <Badge tone={topCluster ? 'teal' : 'warning'} dot>
+                  {topCluster ? `Hotspot · ${topCluster.trend}` : 'No hotspot yet'}
                 </Badge>
-                <h2 className="mt-3 text-xl font-semibold">One complaint is a data point. Seven is a pattern.</h2>
+                <h2 className="mt-3 text-xl font-semibold">
+                  {topCluster
+                    ? `${topCluster.count} reports around ${topCluster.label}`
+                    : 'One complaint is a data point. Seven is a pattern.'}
+                </h2>
                 <p className="mt-2 max-w-xl text-sm leading-6 text-slate-600">
-                  Once the seed and clustering run, this panel will show the strongest hotspot, its
-                  category mix and a generated action brief — not a static mock-up.
+                  {topCluster
+                    ? `${topClusterMix}. Average priority ${topCluster.avgPriority}/100, hotspot score ${topCluster.hotspotScore}/100 within a ${topCluster.radiusMeters} m radius.`
+                    : 'A hotspot needs at least three reports in the same 0.003° grid cell within 30 days. The pipeline will say so rather than inventing a pattern.'}
                 </p>
                 <Link
                   to="/dashboard"

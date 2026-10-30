@@ -4,13 +4,21 @@ import { ArrowLeft, Building2, Copy, Inbox, Map, Menu, Table2, X } from 'lucide-
 import Badge from '@/components/ui/Badge';
 
 const ADMIN_NAV = [
-  { label: 'Queue', icon: Inbox, active: true },
-  { label: 'Duplicates', icon: Copy, active: false },
-  { label: 'Hotspots', icon: Map, active: false },
-  { label: 'Reports', icon: Table2, active: false },
+  { key: 'queue', label: 'Queue', icon: Inbox },
+  { key: 'duplicates', label: 'Duplicates', icon: Copy },
+  { key: 'hotspots', label: 'Hotspots', icon: Map },
+  { key: 'reports', label: 'Reports', icon: Table2 },
 ];
 
+function useActiveTab() {
+  const location = useLocation();
+  const tab = new URLSearchParams(location.search).get('tab');
+  return ADMIN_NAV.some((item) => item.key === tab) ? tab : 'queue';
+}
+
 function SidebarContent({ onNavigate }) {
+  const activeTab = useActiveTab();
+
   return (
     <div className="flex h-full flex-col">
       <div className="flex h-16 items-center gap-2.5 border-b border-navy-800 px-4">
@@ -19,29 +27,26 @@ function SidebarContent({ onNavigate }) {
       </div>
 
       <nav aria-label="Admin sections" className="flex-1 space-y-1 px-3 py-4">
-        {ADMIN_NAV.map((item) => (
-          <Link
-            key={item.label}
-            to="/admin"
-            onClick={onNavigate}
-            aria-current={item.active ? 'page' : undefined}
-            title={item.active ? undefined : 'Available in Phase 7'}
-            className={[
-              'flex min-h-[44px] items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
-              item.active
-                ? 'bg-teal-500/15 text-teal-200'
-                : 'text-navy-100/75 hover:bg-navy-800 hover:text-white',
-            ].join(' ')}
-          >
-            <item.icon className="h-4 w-4" aria-hidden="true" />
-            <span>{item.label}</span>
-            {!item.active ? (
-              <span className="ml-auto rounded bg-navy-800 px-1.5 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-navy-100/60">
-                P7
-              </span>
-            ) : null}
-          </Link>
-        ))}
+        {ADMIN_NAV.map((item) => {
+          const active = item.key === activeTab;
+          return (
+            <Link
+              key={item.key}
+              to={item.key === 'queue' ? '/admin' : `/admin?tab=${item.key}`}
+              onClick={onNavigate}
+              aria-current={active ? 'page' : undefined}
+              className={[
+                'flex min-h-[44px] items-center gap-3 rounded-xl px-3 text-sm font-medium transition-colors',
+                active
+                  ? 'bg-teal-500/15 text-teal-200'
+                  : 'text-navy-100/75 hover:bg-navy-800 hover:text-white',
+              ].join(' ')}
+            >
+              <item.icon className="h-4 w-4" aria-hidden="true" />
+              <span>{item.label}</span>
+            </Link>
+          );
+        })}
       </nav>
 
       <div className="border-t border-navy-800 p-4">

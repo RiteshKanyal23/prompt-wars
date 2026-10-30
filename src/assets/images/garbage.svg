@@ -1,0 +1,19 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Illustration of an overflowing garbage bin">
+  <rect width="640" height="420" fill="#4b5a52"/>
+  <path d="M0 280h640v140H0z" fill="#5c6d62"/>
+  <rect x="250" y="150" width="150" height="180" rx="12" fill="#2f7d5c"/>
+  <rect x="238" y="132" width="174" height="30" rx="8" fill="#256a4d"/>
+  <rect x="286" y="112" width="78" height="22" rx="8" fill="#256a4d"/>
+  <path d="M280 196h90M280 228h90M280 260h90" stroke="#6fbf99" stroke-width="8" stroke-linecap="round" opacity=".55"/>
+  <g fill="#c9a227">
+    <rect x="200" y="300" width="34" height="18" rx="4" transform="rotate(-14 217 309)"/>
+    <rect x="392" y="292" width="40" height="16" rx="4" transform="rotate(12 412 300)"/>
+    <rect x="352" y="322" width="26" height="14" rx="3" transform="rotate(-8 365 329)"/>
+  </g>
+  <g fill="#d8d3c4">
+    <circle cx="232" cy="336" r="9"/>
+    <circle cx="414" cy="342" r="7"/>
+    <circle cx="372" cy="352" r="6"/>
+  </g>
+  <path d="M0 276h640" stroke="#77897c" stroke-width="10"/>
+</svg>

@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Illustration of an open manhole with a warning cone">
+  <rect width="640" height="420" fill="#49586b"/>
+  <path d="M0 220h640v200H0z" fill="#586880"/>
+  <ellipse cx="320" cy="300" rx="118" ry="62" fill="#1a222d"/>
+  <ellipse cx="320" cy="294" rx="92" ry="44" fill="#0f151d"/>
+  <ellipse cx="320" cy="290" rx="70" ry="30" fill="#1f4d5c"/>
+  <path d="M0 236h640" stroke="#77879c" stroke-width="9"/>
+  <g>
+    <path d="M462 300l30-96 30 96z" fill="#e07b2a"/>
+    <rect x="474" y="248" width="36" height="16" fill="#f4f1e8"/>
+    <rect x="440" y="296" width="104" height="14" rx="5" fill="#c96a1f"/>
+  </g>
+  <g stroke="#d9e2ef" stroke-width="5" opacity=".5">
+    <path d="M180 262l-26 34M150 262l26 34"/>
+  </g>
+</svg>

@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Illustration of an overflowing street drain">
+  <rect width="640" height="420" fill="#3d4a5c"/>
+  <path d="M0 250h640v170H0z" fill="#4a586c"/>
+  <path d="M0 300c70-26 130 20 200 2s130-30 210-6 150 22 230 0v124H0z" fill="#2f7f86"/>
+  <path d="M0 330c90-20 150 16 230 0s140-24 210-2 130 18 200 2v90H0z" fill="#1f5f6b"/>
+  <rect x="212" y="262" width="216" height="34" rx="6" fill="#26313f"/>
+  <g stroke="#5b6b80" stroke-width="7">
+    <path d="M240 262v34M276 262v34M312 262v34M348 262v34M384 262v34"/>
+  </g>
+  <circle cx="120" cy="352" r="8" fill="#9fd6d2" opacity=".7"/>
+  <circle cx="470" cy="368" r="5" fill="#9fd6d2" opacity=".6"/>
+  <circle cx="540" cy="340" r="7" fill="#9fd6d2" opacity=".5"/>
+  <rect x="0" y="236" width="640" height="10" fill="#6d7c92"/>
+</svg>

@@ -1284,7 +1284,7 @@ export const seedReports = [
 | Total | 42 |
 | Categories | water 11, roads 9, waste 8, electricity 6, sanitation 4, public_safety 3, other 1 |
 | Statuses | submitted 8, triaged 7, assigned 6, in_progress 6, resolved 9, closed 2, rejected 2, duplicate 2 |
-| Priority | P0 3, P1 11, P2 17, P3 11 |
+| Priority | P0 3, P1 11, P2 17, P3 11 (seed-spec target; runtime `rules-v1` with D-008 yields 3 P0 / 5 P1 / 11 P2 / 23 P3) |
 | Duplicate groups | 8 groups: 5 pairs + 3 triplets (19 reports involved) |
 | Cluster A | Sector 12: 7 reports (water ×3, drain-related water ×2, roads ×2) within 180 m / 14 days |
 | Cluster B | Ward 4 Market: 5 waste reports within 120 m / 10 days |
@@ -2075,7 +2075,7 @@ import { tokenize } from './normalize';
 export function buildIndex(documents) {
   const df = new Map();
   for (const document of documents) {
-    const unique = new Set(tokenize(document));
+    const unique = new Set(stemTokens(tokenize(document)));
     for (const token of unique) df.set(token, (df.get(token) || 0) + 1);
   }
   const N = Math.max(documents.length, 1);
@@ -2087,9 +2087,10 @@ export function buildIndex(documents) {
 }
 
 export function vectorize(tokens, index) {
+  const stemmed = stemTokens(tokens);
   const counts = new Map();
-  for (const token of tokens) counts.set(token, (counts.get(token) || 0) + 1);
-  const length = Math.max(tokens.length, 1);
+  for (const token of stemmed) counts.set(token, (counts.get(token) || 0) + 1);
+  const length = Math.max(stemmed.length, 1);
   const vector = new Map();
   for (const [token, count] of counts) {
     const idf = index.idf.get(token) ?? 1; // unseen token gets max-ish weight
@@ -2115,6 +2116,8 @@ export function textSimilarity(a, b, index) {
   return cosine(vectorize(tokenize(a), index), vectorize(tokenize(b), index));
 }
 ```
+
+A tiny suffix stemmer (`stemTokens` in `normalize.js`) folds `crack / cracks / cracking` and `sink / sinking / sunk` before vectorising. It is used only for similarity, never for display, so the UI still shows the citizen's own words.
 
 **Why TF-IDF instead of embeddings:** it is deterministic, runs in microseconds for 50–500 reports, needs no key, and every score can be explained by shared terms. It is weaker on paraphrases; the limitations note says so. The interface (`textSimilarity`) is where an embedding adapter would slot in later.
 
@@ -2284,13 +2287,13 @@ export function summarizeReport({ title = '', description = '', category = 'othe
 ### 10.6 Duplicate detection (`src/services/ai/duplicates.js`)
 
 ```js
-import { haversineMeters } from '@/lib/geo';
+import { distanceMeters } from '@/lib/geo';
 import { CATEGORY_FAMILIES } from '@/lib/constants';
 import { buildIndex, vectorize, cosine } from './tfidf';
 import { tokenize } from './normalize';
 
 export const DUPLICATE_WEIGHTS = { text: 0.55, category: 0.2, geo: 0.15, time: 0.1 };
-export const DUPLICATE_THRESHOLDS = { strong: 0.82, review: 0.68, floor: 0.55 };
+export const DUPLICATE_THRESHOLDS = { strong: 0.82, review: 0.62, floor: 0.55 };
 
 const MAX_DISTANCE_METERS = 300;
 const MAX_AGE_DAYS = 21;
@@ -2333,9 +2336,9 @@ export function findDuplicateCandidates(report, corpus, { now = new Date(), limi
   const results = [];
 
   for (const candidate of pool) {
-    const distanceMeters = haversineMeters(report, candidate);
+    const meters = distanceMeters(report, candidate);
     const ageDays = Math.abs(nowMs - toTime(candidate.createdAt)) / DAY_MS;
-    if (distanceMeters > MAX_DISTANCE_METERS || ageDays > MAX_AGE_DAYS) continue;
+    if (meters > MAX_DISTANCE_METERS || ageDays > MAX_AGE_DAYS) continue;
 
     const candidateVector = vectorize(
       tokenize(`${candidate.title ?? ''} ${candidate.description ?? ''}`),
@@ -2347,7 +2350,7 @@ export function findDuplicateCandidates(report, corpus, { now = new Date(), limi
     // Require either a category/family match or meaningful lexical overlap.
     if (category === 0 && text < 0.3) continue;
 
-    const geo = Math.max(0, 1 - distanceMeters / MAX_DISTANCE_METERS);
+    const geo = Math.max(0, 1 - meters / MAX_DISTANCE_METERS);
     const time = Math.max(0, 1 - ageDays / MAX_AGE_DAYS);
     const score =
       DUPLICATE_WEIGHTS.text * text +
@@ -2368,7 +2371,7 @@ export function findDuplicateCandidates(report, corpus, { now = new Date(), limi
     if (text >= 0.4) reasons.push(`Shared wording (${Math.round(text * 100)}% text similarity)`);
     if (category === 1) reasons.push('Same category');
     else if (category === 0.5) reasons.push('Related category');
-    if (distanceMeters <= 100) reasons.push(`Only ${Math.round(distanceMeters)} m apart`);
+    if (meters <= 100) reasons.push(`Only ${Math.round(meters)} m apart`);
     if (ageDays <= 3) reasons.push(`Reported ${Math.round(ageDays)} day(s) apart`);
 
     results.push({
@@ -2382,7 +2385,7 @@ export function findDuplicateCandidates(report, corpus, { now = new Date(), limi
         geo: Number(geo.toFixed(3)),
         time: Number(time.toFixed(3)),
       },
-      distanceMeters: Math.round(distanceMeters),
+      distanceMeters: Math.round(meters),
       ageDays: Number(ageDays.toFixed(1)),
       reasons,
     });
@@ -2397,8 +2400,8 @@ export function findDuplicateCandidates(report, corpus, { now = new Date(), limi
 | Score | Level | UI behaviour |
 | --- | --- | --- |
 | ≥ 0.82 | `strong` | Red/amber "Very likely duplicate" with side-by-side comparison |
-| 0.68–0.81 | `review` | "Possible duplicate — review" |
-| 0.55–0.67 | `low` | Shown only in the AI detail table, collapsed by default |
+| 0.62–0.81 | `review` | "Possible duplicate — review" |
+| 0.55–0.61 | `low` | Shown only in the AI detail table, collapsed by default |
 | < 0.55 | — | Discarded |
 
 **Worked example**
@@ -2437,17 +2440,48 @@ const URGENCY_TERMS = [
   ['bus stop', 2], ['playground', 2],
 ];
 
+function matchesTerm(text, term) {
+  if (term.includes(' ')) return text.includes(term);
+  return text.split(' ').some((word) => word.startsWith(term));
+}
+
 function urgencyPoints(text) {
-  const padded = ` ${text} `;
   const matched = [];
   let points = 0;
   for (const [term, value] of URGENCY_TERMS) {
-    if (padded.includes(` ${term} `)) {
+    if (matchesTerm(text, term)) {
       points += value;
       matched.push(term);
     }
   }
   return { points: Math.min(20, points), matched, capped: points > 20 };
+}
+
+/** D-008: life-safety events, matched as phrases so predictions do not escalate. */
+export const CRITICAL_HAZARDS = [
+  ['live wire', 'live wire'],
+  ['electric wire', 'exposed electric wire'],
+  ['open manhole', 'open manhole'],
+  ['missing manhole cover', 'missing manhole cover'],
+  ['manhole cover is missing', 'missing manhole cover'],
+  ['road collapse', 'road collapse'],
+  ['building collapse', 'building collapse'],
+  ['wall collapse', 'wall collapse'],
+  ['has collapsed', 'collapsed road or structure'],
+  ['collapsed into', 'collapsed road or structure'],
+  ['electrocution', 'electrocution risk'],
+  ['gas leak', 'gas leak'],
+  ['drowning', 'drowning risk'],
+];
+
+const CRITICAL_HAZARD_FLOOR = 80;
+
+function criticalHazards(text) {
+  const matched = [];
+  for (const [phrase, label] of CRITICAL_HAZARDS) {
+    if (matchesTerm(text, phrase) && !matched.includes(label)) matched.push(label);
+  }
+  return matched;
 }
 
 function clusterPoints(count) {
@@ -2487,8 +2521,10 @@ export function computePriority({
   createdAt,
   now = new Date(),
 }) {
+  const text = normalizeText(`${title} ${description}`);
   const baseSeverity = CATEGORY_MAP[category]?.baseSeverity ?? 12;
-  const urgency = urgencyPoints(normalizeText(`${title} ${description}`));
+  const urgency = urgencyPoints(text);
+  const hazards = criticalHazards(text);
   const impact = clusterPoints(clusterCount);
   const corroboration = Math.min(10, Math.max(0, confirmedDuplicates) * 5);
   const recency = recencyPoints(createdAt, now);
@@ -2532,7 +2568,19 @@ export function computePriority({
   ];
 
   const raw = factors.reduce((sum, factor) => sum + factor.points, 0);
-  const score = Math.min(100, raw);
+  const escalation =
+    hazards.length > 0 && raw < CRITICAL_HAZARD_FLOOR ? CRITICAL_HAZARD_FLOOR - raw : 0;
+
+  if (escalation > 0) {
+    factors.push({
+      code: 'hazard',
+      label: 'Critical hazard escalation',
+      points: escalation,
+      detail: `Critical hazard detected: ${hazards.join(', ')}. Score raised to the ${CRITICAL_HAZARD_FLOOR}-point P0 floor.`,
+    });
+  }
+
+  const score = Math.min(100, raw + escalation);
 
   if (raw > 100) {
     factors.push({
@@ -2558,6 +2606,7 @@ export function computePriority({
     factors,
     verdict,
     matchedUrgency: urgency.matched,
+    criticalHazards: hazards,
   };
 }
 ```
@@ -2567,11 +2616,17 @@ export function computePriority({
 | Factor | Max | Source |
 | --- | --- | --- |
 | Category severity | 40 | `CATEGORY_MAP[category].baseSeverity` |
-| Urgency language | 20 | Phrase matches in title + description |
+| Urgency language | 20 | Phrase matches in title + description, capped at 20 |
 | Cluster impact | 20 | Count in ~330 m / 30 days, including this report |
 | Corroboration | 10 | Confirmed duplicates × 5 |
 | Recency | 10 | ≤24 h: 10 · ≤72 h: 7 · ≤7 d: 4 · ≤14 d: 2 |
-| **Total** | **100** | Clamped, with a negative `cap` factor if raw > 100 |
+| **Subtotal** | **100** | Clamped, with a negative `cap` factor if raw > 100 |
+| Critical hazard escalation | fills to 80 | D-008 phrase list; only when the subtotal is below 80 |
+
+The escalation row is not another additive weight: it is a floor. A terse
+"open manhole" report can score 52 on language and still be P0, while a report
+that already earns 84 keeps 84. The factor list always sums to the final score,
+so the UI arithmetic never has a hidden bonus.
 
 **Worked example** — waterlogging near a school, 5-report cluster, 2 confirmed duplicates, 6 hours old:
 
@@ -2581,6 +2636,8 @@ severity 30 + urgency 13 (school 4, severe 4, overflowing 2, since last night 3)
 ```
 
 (The exact urgency sum depends on the phrase list; the UI shows the matched terms and the final arithmetic, so there is nothing to memorise.)
+
+**Critical hazard escalation (D-008).** The additive model above cannot reach 80 for a solitary report (maximum urgency is 20 and the highest category severity is 38). To keep life-safety reports from being under-ranked, a short event-based hazard list — live wire, open manhole, missing manhole cover, gas leak, electrocution, drowning, and a collapse that has already happened — raises the final score to the P0 floor of 80 when the raw total is below it. The adjustment is appended as a sixth `hazard` factor, so the factor points still sum to the score. Predictions such as “will collapse” do not escalate. The runtime distribution for the 42-report seed is 3 P0 / 5 P1 / 11 P2 / 23 P3; the required 3 P0 cases all rank in the top five.
 
 **Boundary tests**
 
@@ -2598,7 +2655,7 @@ severity 30 + urgency 13 (school 4, severe 4, overflowing 2, since last night 3)
 ### 10.8 Hotspot detection (`src/services/ai/clusters.js`)
 
 ```js
-import { haversineMeters } from '@/lib/geo';
+import { distanceMeters } from '@/lib/geo';
 import {
   CLUSTER_CELL_SIZE, CLUSTER_MIN_REPORTS, CLUSTER_WINDOW_DAYS, CATEGORY_MAP,
 } from '@/lib/constants';
@@ -2648,7 +2705,7 @@ export function computeClusters(reports, {
     const center = centroid(members);
     const radiusMeters = Math.max(
       30,
-      ...members.map((report) => haversineMeters(center, report)),
+      ...members.map((report) => distanceMeters(center, report)),
     );
 
     const categories = {};
@@ -2710,6 +2767,8 @@ export function findClusterForReport(report, clusters) {
   return clusters.find((cluster) => cluster.members.some((member) => member.id === report.id)) ?? null;
 }
 ```
+
+**Linked duplicates.** Grouping excludes `duplicate` reports so a merge can never manufacture a hotspot. After clusters are built, each confirmed duplicate is attached to the cluster that contains its parent. That is why the Ward 4 seed cluster shows 5 reports (4 originals + 1 linked duplicate) while the Jayanagar pair stays below the minimum of 3.
 
 **Grid geometry**
 
@@ -3779,7 +3838,7 @@ export function formatCoord(lat, lng) {
 const EARTH_RADIUS_M = 6_371_000;
 const toRadians = (degrees) => (degrees * Math.PI) / 180;
 
-export function haversineMeters(a, b) {
+export function distanceMeters(a, b) {
   const lat1 = toRadians(Number(a.latitude ?? a.lat));
   const lat2 = toRadians(Number(b.latitude ?? b.lat));
   const dLat = lat2 - lat1;

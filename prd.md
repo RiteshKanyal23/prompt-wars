@@ -640,8 +640,9 @@ Priority answers: *"If we can only fix five things today, which five and why?"*
 3. **Cluster impact** — how many related reports are nearby.
 4. **Corroboration** — confirmed duplicates.
 5. **Recency** — newer unresolved reports rank higher.
+6. **Critical hazard escalation** — live wire, open manhole, gas leak, drowning, electrocution or a road/structure that has already collapsed raise the score to the P0 floor of 80, even when the citizen writes calmly. Predictions ("it might collapse") do not escalate.
 
-Exact weights and formulas are specified in [`trd.md`](./trd.md) §10.6. The UI must always show the arithmetic, not just the result.
+Exact weights and formulas are specified in [`trd.md`](./trd.md) §10.7. The UI must always show the arithmetic, not just the result. The escalation is a floor, not a hidden bonus: the factor row shows the points needed to reach 80, so the factors always sum to the displayed score.
 
 ### 14.3 Overrides
 

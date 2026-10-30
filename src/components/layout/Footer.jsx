@@ -1,7 +1,10 @@
 import { Link } from 'react-router-dom';
-import { Database, ShieldCheck } from 'lucide-react';
+import { Database, RotateCcw, ShieldCheck } from 'lucide-react';
 import Container from './Container';
 import { useDataMode } from '@/app/providers';
+import { useToast } from '@/hooks/useToast';
+import { useResetDemoData } from '@/hooks/useResetDemoData';
+import { toUserMessage } from '@/lib/errors';
 import { APP } from '@/lib/constants';
 
 const YEAR = new Date().getFullYear();
@@ -21,6 +24,17 @@ const CONSOLE_LINKS = [
 
 export default function Footer() {
   const { isLocal } = useDataMode();
+  const { push } = useToast();
+  const { reset, resetting } = useResetDemoData();
+
+  async function handleReset() {
+    try {
+      await reset();
+      push({ tone: 'success', title: 'Demo data reset', message: '42 synthetic reports restored.' });
+    } catch (error) {
+      push({ tone: 'danger', title: 'Reset failed', message: toUserMessage(error) });
+    }
+  }
 
   return (
     <footer className="mt-auto bg-navy-950 text-navy-50">
@@ -72,9 +86,20 @@ export default function Footer() {
             {isLocal ? 'Demo mode · local data' : 'Supabase mode'}
           </p>
           <p className="mt-3 text-xs leading-5 text-navy-100/70">
-            42 synthetic reports. Notifications and department dispatch are MOCKED. Reset demo data
-            arrives in Phase 2.
+            42 synthetic reports. Notifications and department dispatch are MOCKED. Data stays in
+            this browser.
           </p>
+          {isLocal ? (
+            <button
+              type="button"
+              onClick={handleReset}
+              disabled={resetting}
+              className="mt-3 inline-flex min-h-[44px] items-center gap-2 rounded-xl border border-navy-700 px-3 text-xs font-semibold text-navy-50 transition-colors hover:border-teal-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-60"
+            >
+              <RotateCcw className="h-3.5 w-3.5" aria-hidden="true" />
+              {resetting ? 'Resetting…' : 'Reset demo data'}
+            </button>
+          ) : null}
         </div>
       </Container>
 

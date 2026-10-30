@@ -65,6 +65,63 @@ Affects: files/sections updated
 
 ---
 
+## 2c. G2 — Data layer sign-off
+
+**Gate question:** does data flow?
+
+| # | G2 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | `localStorage` contains `civicpulse:v1:reports` with 42 rows | `localRepository.test.js` asserts key + 42 rows; seed writes on first read | Pass |
+| 2 | Category and status counts match the seed spec | Categories 11/9/8/6/4/3/1; statuses 8/7/6/6/9/2/2/2 — asserted in tests | Pass |
+| 3 | Reset removes and reseeds cleanly | Create makes 43 rows, `reset()` restores 42; footer button wired in local mode | Pass |
+| 4 | `useReports()` returns `{ data, loading, error, reload }` | `src/hooks/useReports.js` returns `{ ...state, reload: load }` | Pass |
+| 5 | No component imports `localStorage` or Supabase directly | Grep across `src/components`, `src/pages`, `src/hooks` finds none; boundary is `src/services/index.js` | Pass |
+| 6 | Build, lint, tests | `build` 4.6 s (1768 modules) · `lint` 0 problems · `test` 26 passed in 3 files | Pass |
+
+**G2 status: PASSED — 30 October 2026.** C2 demo shows 42 seeded rows, real KPI counts, raw priority/status/category mixes, and two raw 0.003° location groups (Sector 12: 7; Ward 4 Market: 5). Next gate: G3 (AI pipeline).
+
+---
+
+## 2d. G3 — AI pipeline sign-off
+
+**Gate question:** is the AI real and explainable?
+
+| # | G3 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | Classification detects water/roads/waste/electricity on seed samples | `ai.test.js` classification tests + 39/42 seed reports classified above the low-confidence threshold | Pass |
+| 2 | Band boundaries 80/60/40 behave exactly | `bandForScore` boundary table in `ai.test.js` (100, 80, 79, 60, 59, 40, 39, 0) | Pass |
+| 3 | Identical text + location + time yields a `strong` duplicate | `ai.test.js` duplicate test asserts `level === 'strong'` and text similarity > 0.9 | Pass |
+| 4 | Distant reports are not matched | `ai.test.js` uses a ~13 km candidate and asserts zero candidates | Pass |
+| 5 | Three reports in one cell produce one cluster | `ai.test.js` cluster test asserts one cluster of three | Pass |
+| 6 | Determinism test passes (ignoring `processingMs`) | `ai.test.js` deep-equals two runs and the full seed snapshot | Pass |
+| 7 | ≥6/8 duplicate groups surfaced | `evaluate-seed.mjs`: **8/8** groups | Pass |
+| 8 | 3/3 P0 reports in the top 5 by score | `evaluate-seed.mjs`: live wire 80, open manhole 80, road collapse 80 — ranks 1–3 | Pass |
+| 9 | 2 clusters found | `evaluate-seed.mjs`: Sector 12 (7 reports, 31 m), Ward 4 Market (5 reports, 30 m) | Pass |
+| 10 | Critical hazard escalation is explicit and testable | `ai.test.js` asserts the 80 floor, factor sum and that “will collapse” does not escalate; D-008 recorded | Pass |
+
+**G3 status: PASSED — 30 October 2026.** `npm run test` 59 passed in 6 files · `npm run lint` 0 problems · `npm run build` passes. Metrics recorded in `phases.md` §7. Next gate: G4 (capture and tracking loop).
+
+---
+
+## 2e. G4 — Capture and tracking loop sign-off
+
+**Gate question:** can a citizen submit and follow the result by code?
+
+| # | G4 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | Submit flow is short and mobile-friendly at 390 px | `ReportIssue.jsx` has three groups (problem, location, evidence/contact), auto-detected category by default and a sticky bottom action bar below `lg` | Pass |
+| 2 | Validation blocks <20 chars, missing pin and >5 MB images | `src/lib/__tests__/validation.test.js`: 9 tests covering description bounds, empty coordinates, category, 5 MB image limit and tracking-code formats; `isValidCoordinate` no longer treats `''` as `0` | Pass |
+| 3 | Successful submit returns a code and navigates to analysis | `useCreateReport` persists via the repository, remembers the code, and `ReportIssue` navigates to `/analysis/:id` with `{ justSubmitted: true }`; `AnalysisDetail` renders the copyable success banner | Pass |
+| 4 | `/track/<code>` renders the report and public events | `routes.smoke.test.js` renders `/track/CP-7K2M9Q`; `TrackDetail` uses `useReport(..., { byCode: true, publicOnly: true })` and `Timeline` | Pass |
+| 5 | Unknown code shows a helpful empty state, not a 404 | `TrackDetail` returns an `EmptyState` with the code, format hint and links to `/track` and `/report` | Pass |
+| 6 | Refresh does not lose persisted reports | Reports live in `civicpulse:v1:reports`; `localRepository.test.js` asserts create → 43 rows, reset → 42, and recent-code persistence/clear | Pass |
+| 7 | Internal notes never appear on the public route | `localRepository.test.js` writes a private note and asserts `listEvents(..., { publicOnly: true })` excludes it | Pass |
+| 8 | Build, lint, tests | `test` 59 passed in 6 files · `lint` 0 problems · `build` 1773 modules | Pass |
+
+**G4 status: PASSED — 30 October 2026.** The loop is implemented end to end. The <60 s submission is a layout/flow claim, not a lab measurement; rehearse it once on a real 390 px device before judging. Metrics recorded in `phases.md` §8. Next gate: G5 (analysis UI).
+
+---
+
 ## 3. Frozen constants
 
 These values may not drift during the build. Changing one requires a new entry here.
@@ -157,6 +214,22 @@ If a feature does not serve one of these five sentences, it is out of scope for 
 **Consequence:** Some planned UI will be missing at 8:00; the five-sentence journey will not be.
 **Affects:** `phases.md` §13, §14; `prd.md` §18.
 
+### D-008 — Critical hazards get an explicit P0 floor
+
+**Date:** 30 Oct 2026 · **Phase:** P3 · **Status:** accepted
+**Context:** The additive formula caps urgency at 20 and the highest base severity is 38, so a solitary report could never reach the 80-point P0 band. The seed deliberately contains three life-safety cases (live/electric wire, open manhole, road collapse) that must surface as P0 and rank in the top five.
+**Decision:** A small, event-based hazard list (`CRITICAL_HAZARDS`: live wire, open manhole, manhole cover missing, gas leak, collapse that has already happened, electrocution, drowning) raises the final score to the 80-point floor. Predictions such as “will collapse” do **not** escalate. The escalation appears as an explicit `hazard` factor, so factor points still sum to the score.
+**Consequence:** The priority factor table can contain a sixth row for hazard escalations; the five base factors are unchanged. The documented P0 distribution is recalibrated to 3 P0 / 5 P1 / 11 P2 / 23 P3 for this seed.
+**Affects:** `src/services/ai/priority.js`, `trd.md` §10.7, `src/services/ai/__tests__/ai.test.js`, `scripts/evaluate-seed.mjs`, `phases.md` §7.
+
+### D-009 — Review threshold lowered to 0.62 for the seeded demo
+
+**Date:** 30 Oct 2026 · **Phase:** P3/P7 · **Status:** accepted
+**Context:** At the original 0.68 review floor the 42-report seed surfaced zero pending duplicate pairs: the only two review-scored pairs were already confirmed duplicates and were therefore excluded from the queue. The Duplicates tab (P7-T7/T8) and G7 confirm/reject checks had no work to show. `phases.md` §19 names this exact risk and sanctions 0.62 as the demo mitigation.
+**Decision:** Set `DUPLICATE_REVIEW_THRESHOLD` / `DUPLICATE_THRESHOLDS.review` to 0.62. Strong stays at 0.82 and the floor stays at 0.55; weights, radius and window are unchanged. `SEED_VERSION` is bumped to 3 so existing local stores rebuild with the new pairs.
+**Consequence:** `evaluate-seed` now recovers 8/8 duplicate groups, P0 stays 3/3 in the top five, and the admin queue starts with four pending pairs. Citizens still see a human decision; nothing auto-merges.
+**Affects:** `src/lib/constants.js`, `src/services/ai/duplicates.js`, `src/services/local/seed.js`, `trd.md` §10.4, `phases.md` §19, `scripts/evaluate-seed.mjs`.
+
 ---
 
 ## 6. ADR index
@@ -194,4 +267,4 @@ The architectural decisions with full trade-off analysis live in [`architecture.
 
 ---
 
-*End of decision log. Next entry: G1 sign-off after Phase 1.*
+*End of decision log. Next entry: G5 sign-off after Phase 5.*

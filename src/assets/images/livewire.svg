@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 640 420" role="img" aria-label="Illustration of a hanging electric wire near a bus stop">
+  <rect width="640" height="420" fill="#2f3a4c"/>
+  <path d="M0 320h640v100H0z" fill="#3c4a5e"/>
+  <rect x="150" y="60" width="22" height="270" rx="6" fill="#8b96a6"/>
+  <rect x="128" y="48" width="66" height="14" rx="5" fill="#a8b2c0"/>
+  <path d="M172 84c90 8 130 96 96 152-26 42-4 74 46 80" fill="none" stroke="#1c232e" stroke-width="9" stroke-linecap="round"/>
+  <path d="M314 316l-12 34M314 316l14 32M314 316l30 18" stroke="#f2c94c" stroke-width="7" stroke-linecap="round"/>
+  <circle cx="314" cy="316" r="14" fill="#f2c94c" opacity=".35"/>
+  <circle cx="314" cy="316" r="7" fill="#ffe28a"/>
+  <rect x="400" y="220" width="180" height="12" rx="4" fill="#6c7b90"/>
+  <rect x="412" y="232" width="10" height="90" fill="#6c7b90"/>
+  <rect x="558" y="232" width="10" height="90" fill="#6c7b90"/>
+  <rect x="392" y="168" width="196" height="56" rx="8" fill="#1f2a3a"/>
+  <rect x="410" y="184" width="110" height="8" rx="4" fill="#7f8da2"/>
+  <rect x="410" y="200" width="70" height="8" rx="4" fill="#7f8da2"/>
+</svg>
