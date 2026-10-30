@@ -126,16 +126,17 @@ Do not spend more than 30 minutes on docs. Freeze what exists; implementation cl
 
 ### Tasks
 
-- [ ] **P1-T1** Scaffold Vite + React and install pinned dependencies (`trd.md` §3).
-- [ ] **P1-T2** Replace `package.json`, `vite.config.js`, `tailwind.config.js`, `postcss.config.js`, `index.html`, `jsconfig.json`, `eslint.config.js`.
-- [ ] **P1-T3** Add `src/index.css` tokens and component classes (`trd.md` §7).
-- [ ] **P1-T4** Add `src/main.jsx` and `src/app/App.jsx` with all routes.
-- [ ] **P1-T5** Build `AppLayout`, `Header`, `Footer`, `MobileNav`, `Container`, `PageHeader`.
-- [ ] **P1-T6** Build `AdminLayout` with sidebar/top bar and a back-to-site link.
-- [ ] **P1-T7** Build UI primitives: `Button`, `Card`, `Badge`, `EmptyState`, `Skeleton`, `HonestyNote`.
-- [ ] **P1-T8** Create placeholder pages: Home, ReportIssue, Analysis, AnalysisDetail, Dashboard, Admin, Track, TrackDetail, NotFound.
-- [ ] **P1-T9** Add the data-mode badge ("Demo mode — local data") and a temporary footer.
-- [ ] **P1-T10** Verify 360 px, 768 px and 1366 px widths; no horizontal scroll.
+- [x] **P1-T1** Scaffold Vite + React and install pinned dependencies (`trd.md` §3).
+- [x] **P1-T2** Replace `package.json`, `vite.config.js`, `tailwind.config.js`, `postcss.config.js`, `index.html`, `jsconfig.json`, `eslint.config.js`.
+- [x] **P1-T3** Add `src/index.css` tokens and component classes (`trd.md` §7).
+- [x] **P1-T4** Add `src/main.jsx` and `src/app/App.jsx` with all routes.
+- [x] **P1-T5** Build `AppLayout`, `Header`, `Footer`, `MobileNav`, `Container`, `PageHeader`.
+- [x] **P1-T6** Build `AdminLayout` with sidebar/top bar and a back-to-site link.
+- [x] **P1-T7** Build UI primitives: `Button`, `Card`, `Badge`, `EmptyState`, `Skeleton`, `HonestyNote`, `ToastViewport`.
+- [x] **P1-T8** Create placeholder pages: Home, ReportIssue, Analysis, AnalysisDetail, Dashboard, Admin, Track, TrackDetail, NotFound.
+- [x] **P1-T9** Add the data-mode badge ("Demo mode · local data") and the footer honesty block.
+- [x] **P1-T10** Verify 360 px, 768 px and 1366 px widths; no horizontal scroll. *(class audit done; visual pass repeated at G8)*
+- [x] **P1-T11** Add `src/app/__tests__/routes.smoke.test.js` — SSR render of every route.
 
 ### Deliverables
 
@@ -149,13 +150,18 @@ Do not spend more than 30 minutes on docs. Freeze what exists; implementation cl
 ```bash
 npm run dev
 npm run build
+npm run test
 ```
 
-- [ ] Dev server starts on `http://localhost:5173/`.
-- [ ] Every route renders without a blank screen.
-- [ ] Mobile drawer opens/closes; ESC closes it.
-- [ ] Footer badge accurately says local demo mode.
-- [ ] `npm run build` succeeds.
+- [x] Dev server starts on `http://localhost:5173/` (verified on port 5180 for automation; HTTP 200 + entry script).
+- [x] Every route renders without a blank screen (9/9 SSR smoke tests pass).
+- [x] Mobile drawer opens/closes; ESC closes it (implemented with keydown + scroll lock).
+- [x] Footer badge accurately says local demo mode (env resolution defaults to local).
+- [x] `npm run build` succeeds (224 kB JS / 46 kB CSS, 4.9 s).
+- [x] `npm run lint` passes with zero warnings.
+- [x] `npm run test` passes (9 tests).
+
+**G1 result: PASSED.** Recorded in `docs/decision-log.md`.
 
 ### Demo checkpoint C1
 

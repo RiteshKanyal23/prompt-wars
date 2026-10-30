@@ -293,7 +293,9 @@ civicpulse-ai/
 │  │  └─ logo-mark.svg
 │  ├─ app/
 │  │  ├─ App.jsx                  # router + providers
-│  │  └─ providers.jsx            # ToastProvider, DataModeProvider
+│  │  ├─ providers.jsx            # ToastProvider, DataModeProvider
+│  │  └─ __tests__/
+│  │     └─ routes.smoke.test.js  # SSR smoke test for every route (P1 gate)
 │  ├─ components/
 │  │  ├─ layout/
 │  │  │  ├─ AppLayout.jsx
@@ -490,7 +492,7 @@ export default defineConfig({
   },
   test: {
     environment: 'node',
-    include: ['src/**/*.test.js'],
+    include: ['src/**/*.test.{js,jsx}'],
   },
 });
 ```
@@ -3474,6 +3476,18 @@ If anonymous sign-in is disabled in the Supabase project, the app falls back to 
 ---
 
 ## 15. Testing
+
+### 15.0 Route smoke test (`src/app/__tests__/routes.smoke.test.js`)
+
+Runs before any feature test. It server-renders each route inside `MemoryRouter` and asserts the shell markup is present, catching broken imports, bad JSX and provider errors without a browser.
+
+```js
+// One case per route: '/', '/report', '/analysis', '/analysis/:id',
+// '/dashboard', '/track', '/track/:code', '*', and '/admin'.
+// Assertion: the HTML contains 'CivicPulse' and exceeds 500 characters.
+```
+
+This is the P1 gate evidence. It is not a substitute for the browser pass at G8.
 
 ### 15.1 Unit tests for AI (`src/services/ai/__tests__/ai.test.js`)
 

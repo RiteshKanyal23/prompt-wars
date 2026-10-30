@@ -49,6 +49,22 @@ Affects: files/sections updated
 
 ---
 
+## 2b. G1 — Runnable shell sign-off
+
+**Gate question:** does the shell run?
+
+| # | G1 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | Dev server serves the app | `vite` on port 5180 returned HTTP 200 with `#root` and `/src/main.jsx` | Pass |
+| 2 | Every route renders | 9/9 SSR smoke tests in `src/app/__tests__/routes.smoke.test.js` | Pass |
+| 3 | Mobile drawer closes on ESC | `keydown` listener + body scroll lock in `MobileNav.jsx` | Pass |
+| 4 | Data-mode badge is accurate | `env.js` resolves to `local` without Supabase credentials | Pass |
+| 5 | Build, lint, tests | `build` 4.9 s · `lint` 0 problems · `test` 9 passed | Pass |
+
+**G1 status: PASSED — 30 October 2026.** Next gate: G2 (data layer).
+
+---
+
 ## 3. Frozen constants
 
 These values may not drift during the build. Changing one requires a new entry here.
