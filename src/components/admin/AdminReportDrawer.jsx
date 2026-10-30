@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import {
   AlertTriangle,
   Clock,
@@ -19,6 +19,7 @@ import StatusBadge from '@/components/reports/StatusBadge';
 import Timeline from '@/components/reports/Timeline';
 import ReportMap from '@/components/map/ReportMap';
 import { useReport } from '@/hooks/useReport';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { useUpdateReport } from '@/hooks/useUpdateReport';
 import { useToast } from '@/hooks/useToast';
 import {
@@ -104,6 +105,7 @@ export default function AdminReportDrawer({ report, onClose }) {
   const { report: fresh, events, loading } = useReport(report.id);
   const { updateReport, saving } = useUpdateReport();
   const { push } = useToast();
+  const drawerRef = useFocusTrap(true, onClose);
 
   const data = fresh?.id === report.id ? fresh : report;
   const [department, setDepartment] = useState(data.department ?? '');
@@ -112,20 +114,6 @@ export default function AdminReportDrawer({ report, onClose }) {
   const [publicNote, setPublicNote] = useState('');
   const [internalNote, setInternalNote] = useState('');
   const [error, setError] = useState(null);
-
-  useEffect(() => {
-    const handleKey = (event) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKey);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [onClose]);
 
   const category = CATEGORY_MAP[data.category] ?? CATEGORY_MAP.other;
   const factors = data.ai?.priority?.factors ?? [];
@@ -253,9 +241,11 @@ export default function AdminReportDrawer({ report, onClose }) {
       <div className="absolute inset-0 bg-navy-950/50" onClick={onClose} aria-hidden="true" />
 
       <div
+        ref={drawerRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="admin-report-title"
+        tabIndex={-1}
         className="relative z-10 flex h-full w-full max-w-2xl animate-fade-in flex-col bg-mist shadow-lift"
       >
         <div className="flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-4 py-4 sm:px-5">

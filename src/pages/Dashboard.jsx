@@ -1,33 +1,33 @@
-import { useMemo, useState } from 'react';
+import { lazy, Suspense, useMemo, useState } from 'react';
 import { Link, useSearchParams } from 'react-router-dom';
-import { AlertCircle, ArrowRight, Filter, MapPin, Search, X } from 'lucide-react';
+import { AlertCircle, ArrowRight, Filter, Search, X } from 'lucide-react';
 import PageHeader from '@/components/layout/PageHeader';
 import Container from '@/components/layout/Container';
 import Card from '@/components/ui/Card';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
-import EmptyState from '@/components/ui/EmptyState';
 import HonestyNote from '@/components/ui/HonestyNote';
 import Skeleton from '@/components/ui/Skeleton';
-import PriorityBadge from '@/components/reports/PriorityBadge';
-import StatusBadge from '@/components/reports/StatusBadge';
+import StatCard from '@/components/ui/StatCard';
 import ReportMap from '@/components/map/ReportMap';
-import DashboardCharts from '@/components/dashboard/DashboardCharts';
+import DashboardReportTable from '@/components/dashboard/DashboardReportTable';
 import FixFirstList from '@/components/dashboard/FixFirstList';
 import HotspotCard from '@/components/dashboard/HotspotCard';
 import ActionBriefModal from '@/components/dashboard/ActionBriefModal';
 import { useReports } from '@/hooks/useReports';
 import { computeClusters } from '@/services/ai/clusters';
 import {
-  CATEGORY_MAP,
   CATEGORIES,
   OPEN_STATUSES,
   PRIORITY_ORDER,
   STATUS_KEYS,
   STATUS_META,
 } from '@/lib/constants';
-import { formatNumber, formatPercent, timeAgo } from '@/lib/format';
+import { formatNumber, formatPercent } from '@/lib/format';
 import { summarizeReports, filterReports } from '@/lib/reportStats';
+
+// Recharts is only needed on this route, so it stays out of the initial bundle.
+const DashboardCharts = lazy(() => import('@/components/dashboard/DashboardCharts'));
 
 const KPI_HINTS = {
   'Total reports': 'Reports matching the filters',
@@ -36,20 +36,6 @@ const KPI_HINTS = {
   'Resolved (30 d)': 'Resolved or closed',
   'Duplicate rate': 'Linked duplicates',
 };
-
-function KpiCard({ label, value, loading }) {
-  return (
-    <Card className="card-pad">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      {loading ? (
-        <Skeleton className="mt-3 h-7 w-16" />
-      ) : (
-        <p className="mt-2 text-2xl font-bold tabular-nums text-navy-900 sm:text-3xl">{value}</p>
-      )}
-      <p className="mt-1 text-[11px] leading-4 text-slate-500">{KPI_HINTS[label]}</p>
-    </Card>
-  );
-}
 
 function FilterSelect({ id, label, value, onChange, children }) {
   return (
@@ -230,7 +216,13 @@ export default function Dashboard() {
 
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">
               {kpis.map((kpi) => (
-                <KpiCard key={kpi.label} label={kpi.label} value={kpi.value} loading={loading} />
+                <StatCard
+                  key={kpi.label}
+                  label={kpi.label}
+                  value={kpi.value}
+                  hint={KPI_HINTS[kpi.label]}
+                  loading={loading}
+                />
               ))}
             </div>
 
@@ -324,119 +316,22 @@ export default function Dashboard() {
                 <Badge tone="neutral">No animation</Badge>
               </div>
               <div className="mt-5">
-                {loading ? <Skeleton lines={8} /> : <DashboardCharts reports={filtered} />}
-              </div>
-            </Card>
-
-            <Card className="mt-6 overflow-hidden">
-              <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-200 px-5 py-4">
-                <div>
-                  <h2 className="text-base font-semibold">Reports in this filter</h2>
-                  <p className="mt-0.5 text-xs text-slate-500">
-                    The list alternative to the map. Every row opens its analysis.
-                  </p>
-                </div>
-                <Badge tone="neutral">{formatNumber(filtered.length)} rows</Badge>
-              </div>
-
-              {loading ? (
-                <div className="space-y-3 p-5">
+                {loading ? (
                   <Skeleton lines={8} />
-                </div>
-              ) : filtered.length === 0 ? (
-                <EmptyState
-                  className="m-5 border-0 bg-transparent"
-                  icon={MapPin}
-                  title="No reports match these filters"
-                  description="Clear a filter to widen the set, or reset the demo data from the footer to restore the 42-report seed."
-                  action={
-                    activeFilters > 0 ? (
-                      <Button variant="ghost" onClick={clearFilters}>
-                        Clear filters
-                      </Button>
-                    ) : null
-                  }
-                />
-              ) : (
-                <>
-                  <div className="hidden overflow-x-auto sm:block">
-                    <div className="max-h-[28rem] overflow-y-auto">
-                      <table className="table-base">
-                        <thead className="sticky top-0 z-10 bg-white">
-                          <tr>
-                            <th scope="col">Report</th>
-                            <th scope="col">Category</th>
-                            <th scope="col">Priority</th>
-                            <th scope="col">Status</th>
-                            <th scope="col">Location</th>
-                            <th scope="col">Created</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {filtered.map((report) => (
-                            <tr key={report.id}>
-                              <td className="max-w-[22rem]">
-                                <Link
-                                  to={`/analysis/${report.id}`}
-                                  className="font-semibold text-navy-900 hover:text-teal-700"
-                                >
-                                  {report.title ?? report.referenceCode}
-                                </Link>
-                                <p className="mt-0.5 font-mono text-[11px] text-slate-500">
-                                  {report.referenceCode}
-                                </p>
-                              </td>
-                              <td>{CATEGORY_MAP[report.category]?.short ?? report.category}</td>
-                              <td>
-                                <PriorityBadge
-                                  band={report.priorityBand}
-                                  score={report.priorityScore}
-                                />
-                              </td>
-                              <td>
-                                <StatusBadge status={report.status} />
-                              </td>
-                              <td className="max-w-[14rem]">
-                                <span className="block truncate">{report.locationLabel ?? '—'}</span>
-                              </td>
-                              <td className="whitespace-nowrap text-slate-500">
-                                {timeAgo(report.createdAt)}
-                              </td>
-                            </tr>
-                          ))}
-                        </tbody>
-                      </table>
-                    </div>
-                  </div>
-
-                  <ul className="divide-y divide-slate-100 sm:hidden">
-                    {filtered.map((report) => (
-                      <li key={report.id} className="px-4 py-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <Link
-                            to={`/analysis/${report.id}`}
-                            className="text-sm font-semibold text-navy-900 hover:text-teal-700"
-                          >
-                            {report.title ?? report.referenceCode}
-                          </Link>
-                          <StatusBadge status={report.status} />
-                        </div>
-                        <p className="mt-1 font-mono text-[11px] text-slate-500">
-                          {report.referenceCode} · {CATEGORY_MAP[report.category]?.short ?? report.category}
-                        </p>
-                        <div className="mt-2">
-                          <PriorityBadge band={report.priorityBand} score={report.priorityScore} />
-                        </div>
-                        <p className="mt-1 flex items-center gap-1 text-xs text-slate-500">
-                          <MapPin className="h-3 w-3 shrink-0" aria-hidden="true" />
-                          <span className="truncate">{report.locationLabel ?? 'No location label'}</span>
-                        </p>
-                      </li>
-                    ))}
-                  </ul>
-                </>
-              )}
+                ) : (
+                  <Suspense fallback={<Skeleton lines={8} />}>
+                    <DashboardCharts reports={filtered} />
+                  </Suspense>
+                )}
+              </div>
             </Card>
+
+            <DashboardReportTable
+              reports={filtered}
+              loading={loading}
+              activeFilters={activeFilters}
+              onClearFilters={clearFilters}
+            />
 
             <HonestyNote className="mt-6" title="Synthetic corpus, real pipeline">
               These 42 reports are synthetic and live in this browser. Category, summary, duplicate

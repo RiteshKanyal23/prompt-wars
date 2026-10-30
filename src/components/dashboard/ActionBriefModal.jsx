@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { Check, Copy, FileText, X } from 'lucide-react';
 import Badge from '@/components/ui/Badge';
 import Button from '@/components/ui/Button';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { buildActionBrief } from '@/services/ai/brief';
 import { copyText } from '@/lib/clipboard';
 
@@ -25,23 +26,8 @@ function briefToText(brief) {
 
 export default function ActionBriefModal({ cluster, onClose }) {
   const [copied, setCopied] = useState(false);
+  const dialogRef = useFocusTrap(Boolean(cluster), onClose);
   const brief = cluster ? buildActionBrief(cluster) : null;
-
-  useEffect(() => {
-    if (!cluster) return undefined;
-
-    const handleKey = (event) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKey);
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = previousOverflow;
-    };
-  }, [cluster, onClose]);
 
   useEffect(() => {
     setCopied(false);
@@ -59,9 +45,11 @@ export default function ActionBriefModal({ cluster, onClose }) {
       <div className="absolute inset-0 bg-navy-950/55" onClick={onClose} aria-hidden="true" />
 
       <div
+        ref={dialogRef}
         role="dialog"
         aria-modal="true"
         aria-labelledby="brief-title"
+        tabIndex={-1}
         className="relative z-10 max-h-[92dvh] w-full max-w-2xl animate-fade-in overflow-y-auto rounded-t-2xl bg-white shadow-lift sm:rounded-2xl"
       >
         <div className="sticky top-0 flex items-start justify-between gap-3 border-b border-slate-200 bg-white px-5 py-4">

@@ -28,6 +28,7 @@ function QueueTable({ rows, onSelect }) {
   return (
     <div className="hidden overflow-x-auto md:block">
       <table className="table-base">
+        <caption className="sr-only">Open reports sorted by priority</caption>
         <thead>
           <tr>
             <th scope="col">Report</th>

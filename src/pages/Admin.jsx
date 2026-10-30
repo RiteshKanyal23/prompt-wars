@@ -16,6 +16,7 @@ import Button from '@/components/ui/Button';
 import EmptyState from '@/components/ui/EmptyState';
 import HonestyNote from '@/components/ui/HonestyNote';
 import Skeleton from '@/components/ui/Skeleton';
+import StatCard from '@/components/ui/StatCard';
 import AdminQueue from '@/components/admin/AdminQueue';
 import AdminReportsTab from '@/components/admin/AdminReportsTab';
 import DuplicateReview from '@/components/admin/DuplicateReview';
@@ -26,6 +27,7 @@ import ActionBriefModal from '@/components/dashboard/ActionBriefModal';
 import { useReports } from '@/hooks/useReports';
 import { useClusters } from '@/hooks/useClusters';
 import { useDuplicatePairs } from '@/hooks/useDuplicatePairs';
+import { useTabList } from '@/hooks/useTabList';
 import { useDataMode } from '@/app/providers';
 import { OPEN_STATUSES } from '@/lib/constants';
 import { formatNumber } from '@/lib/format';
@@ -44,20 +46,6 @@ const TAB_COPY = {
   reports: 'Search the full corpus and export the filtered set as a formula-safe CSV.',
 };
 
-function KpiCard({ label, value, loading, hint }) {
-  return (
-    <Card className="card-pad">
-      <p className="text-xs font-medium uppercase tracking-wide text-slate-500">{label}</p>
-      {loading ? (
-        <Skeleton className="mt-3 h-7 w-12" />
-      ) : (
-        <p className="mt-2 text-2xl font-bold tabular-nums text-navy-900">{value}</p>
-      )}
-      <p className="mt-1 text-[11px] leading-4 text-slate-500">{hint}</p>
-    </Card>
-  );
-}
-
 export default function Admin() {
   const [params, setParams] = useSearchParams();
   const rawTab = params.get('tab');
@@ -70,6 +58,11 @@ export default function Admin() {
 
   const [selected, setSelected] = useState(null);
   const [briefCluster, setBriefCluster] = useState(null);
+  const { listRef, handleKeyDown } = useTabList(
+    TABS.map((item) => item.key),
+    tab,
+    (key) => selectTab(key),
+  );
 
   const openReports = reports.filter((report) => OPEN_STATUSES.includes(report.status));
   const urgentOpen = openReports.filter(
@@ -107,15 +100,24 @@ export default function Admin() {
         </div>
       </div>
 
-      <div className="mt-5 flex flex-wrap items-center gap-1.5" role="tablist" aria-label="Admin sections">
+      <div
+        ref={listRef}
+        onKeyDown={handleKeyDown}
+        className="mt-5 flex flex-wrap items-center gap-1.5"
+        role="tablist"
+        aria-label="Admin sections"
+      >
         {TABS.map((item) => {
           const active = item.key === tab;
           return (
             <button
               key={item.key}
+              id={`admin-tab-${item.key}`}
               type="button"
               role="tab"
               aria-selected={active}
+              aria-controls="admin-tabpanel"
+              tabIndex={active ? 0 : -1}
               onClick={() => selectTab(item.key)}
               className={[
                 'inline-flex min-h-[44px] items-center gap-2 rounded-xl border px-3.5 text-sm font-medium transition-colors',
@@ -156,28 +158,29 @@ export default function Admin() {
         </Card>
       ) : (
         <>
-          {tab === 'queue' ? (
-            <div className="mt-5 space-y-5">
+          <div id="admin-tabpanel" role="tabpanel" aria-labelledby={`admin-tab-${tab}`}>
+            {tab === 'queue' ? (
+              <div className="mt-5 space-y-5">
               <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-                <KpiCard
+                <StatCard
                   label="Open reports"
                   value={formatNumber(openReports.length)}
                   loading={loading}
                   hint="Received to in progress"
                 />
-                <KpiCard
+                <StatCard
                   label="P0 + P1 open"
                   value={formatNumber(urgentOpen.length)}
                   loading={loading}
                   hint="Critical and high bands"
                 />
-                <KpiCard
+                <StatCard
                   label="Unassigned"
                   value={formatNumber(unassigned.length)}
                   loading={loading}
                   hint="No owner recorded"
                 />
-                <KpiCard
+                <StatCard
                   label="Duplicate proposals"
                   value={formatNumber(pendingPairs.length)}
                   loading={pairsLoading}
@@ -296,6 +299,7 @@ export default function Admin() {
               <AdminReportsTab reports={reports} loading={loading} onSelect={setSelected} />
             </div>
           ) : null}
+          </div>
 
           <HonestyNote className="mt-5" title="Real state, mocked dispatch">
             Status changes, assignment and duplicate decisions are real local state and appear on{' '}

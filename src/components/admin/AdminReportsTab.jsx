@@ -112,6 +112,7 @@ export default function AdminReportsTab({ reports, loading, onSelect }) {
         <>
           <div className="hidden overflow-x-auto md:block">
             <table className="table-base">
+              <caption className="sr-only">Reports matching the current search</caption>
               <thead>
                 <tr>
                   <th scope="col">Report</th>

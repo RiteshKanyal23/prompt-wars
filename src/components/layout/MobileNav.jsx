@@ -1,29 +1,10 @@
-import { useEffect, useRef } from 'react';
 import { Link, NavLink } from 'react-router-dom';
 import { Plus, X } from 'lucide-react';
+import { useFocusTrap } from '@/hooks/useFocusTrap';
 import { NAV_ITEMS } from '@/lib/constants';
 
 export default function MobileNav({ open, onClose }) {
-  const closeRef = useRef(null);
-
-  useEffect(() => {
-    if (!open) return undefined;
-
-    const handleKey = (event) => {
-      if (event.key === 'Escape') onClose();
-    };
-    document.addEventListener('keydown', handleKey);
-
-    const previousOverflow = document.body.style.overflow;
-    document.body.style.overflow = 'hidden';
-    const focusTimer = window.setTimeout(() => closeRef.current?.focus(), 0);
-
-    return () => {
-      document.removeEventListener('keydown', handleKey);
-      document.body.style.overflow = previousOverflow;
-      window.clearTimeout(focusTimer);
-    };
-  }, [open, onClose]);
+  const dialogRef = useFocusTrap(open, onClose);
 
   if (!open) return null;
 
@@ -31,16 +12,17 @@ export default function MobileNav({ open, onClose }) {
     <div className="fixed inset-0 z-50 lg:hidden">
       <div className="absolute inset-0 bg-navy-950/50" onClick={onClose} aria-hidden="true" />
       <div
+        ref={dialogRef}
         id="mobile-nav"
         role="dialog"
         aria-modal="true"
         aria-label="Site menu"
+        tabIndex={-1}
         className="absolute inset-y-0 right-0 flex w-[min(20rem,88vw)] animate-fade-in flex-col bg-white shadow-lift"
       >
         <div className="flex h-16 items-center justify-between border-b border-slate-200 px-4">
           <span className="text-sm font-semibold uppercase tracking-[0.14em] text-slate-500">Menu</span>
           <button
-            ref={closeRef}
             type="button"
             onClick={onClose}
             aria-label="Close menu"

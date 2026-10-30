@@ -77,6 +77,21 @@ export default function DashboardCharts({ reports = [] }) {
   const trend = trendData(reports);
   const totalBand = bandData.reduce((sum, item) => sum + item.value, 0);
 
+  const categorySummary = categoryData
+    .filter((entry) => entry.reports > 0)
+    .map((entry) => `${entry.name} ${entry.reports}`)
+    .join(', ');
+  const categoryLabel = `Bar chart: reports by category across ${reports.length} reports. ${
+    categorySummary || 'No reports in this filter.'
+  }`;
+
+  const bandSummary = bandData.map((entry) => `${entry.name} ${entry.value}`).join(', ');
+  const bandLabel = `Donut chart: priority mix. ${bandSummary}.`;
+
+  const trendTotal = trend.reduce((sum, bucket) => sum + bucket.reports, 0);
+  const peak = trend.reduce((best, bucket) => (bucket.reports > best.reports ? bucket : best), trend[0]);
+  const trendLabel = `Area chart: reports per day over the last 14 days. ${trendTotal} reports in total, peak ${peak.reports} on ${peak.label}.`;
+
   return (
     <div className="space-y-6">
       <div className="grid gap-6 lg:grid-cols-2">
@@ -85,7 +100,7 @@ export default function DashboardCharts({ reports = [] }) {
             <h3 className="text-sm font-semibold text-navy-900">Reports by category</h3>
             <span className="text-xs text-slate-500">{reports.length} total</span>
           </div>
-          <div className="mt-3 h-56">
+          <div className="mt-3 h-56" role="img" aria-label={categoryLabel}>
             {!mounted ? (
               <Skeleton className="h-full w-full" />
             ) : (
@@ -118,7 +133,7 @@ export default function DashboardCharts({ reports = [] }) {
             <h3 className="text-sm font-semibold text-navy-900">Priority mix</h3>
             <span className="text-xs text-slate-500">Bands at 80 / 60 / 40</span>
           </div>
-          <div className="mt-3 h-56">
+          <div className="mt-3 h-56" role="img" aria-label={bandLabel}>
             {!mounted ? (
               <Skeleton className="h-full w-full" />
             ) : totalBand === 0 ? (
@@ -167,7 +182,7 @@ export default function DashboardCharts({ reports = [] }) {
           <h3 className="text-sm font-semibold text-navy-900">Reports per day · last 14 days</h3>
           <span className="text-xs text-slate-500">Filtered set</span>
         </div>
-        <div className="mt-3 h-48">
+        <div className="mt-3 h-48" role="img" aria-label={trendLabel}>
           {!mounted ? (
             <Skeleton className="h-full w-full" />
           ) : (
