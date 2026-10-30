@@ -221,11 +221,16 @@ export default function TrackDetail() {
                 </p>
 
                 {report.imageUrl ? (
-                  <img
-                    src={report.imageUrl}
-                    alt="Citizen-submitted evidence"
-                    className="mt-4 w-full rounded-xl border border-slate-200 object-cover"
-                  />
+                  <>
+                    <img
+                      src={report.imageUrl}
+                      alt="Citizen-submitted evidence"
+                      className="mt-4 w-full rounded-xl border border-slate-200 object-cover"
+                    />
+                    <p className="mt-2 text-xs leading-5 text-slate-500">
+                      Photo evidence only. Image content is never analysed by the AI pipeline.
+                    </p>
+                  </>
                 ) : (
                   <p className="mt-4 flex items-center gap-2 rounded-xl border border-dashed border-slate-300 px-3 py-2.5 text-xs text-slate-500">
                     <ImageOff className="h-4 w-4" aria-hidden="true" />
@@ -247,9 +252,9 @@ export default function TrackDetail() {
                   <Link to={`/analysis/${report.id}`} className="btn btn-ghost">
                     How this report was analysed
                   </Link>
-                  <Link to={`/track/${report.referenceCode}`} className="btn btn-ghost">
+                  <Button variant="ghost" onClick={reload} loading={loading}>
                     Refresh timeline
-                  </Link>
+                  </Button>
                 </div>
               </Card>
 

@@ -27,6 +27,7 @@ export default function ReportMap(props) {
   if (failed) {
     return (
       <div
+        role="status"
         className="flex flex-col items-center justify-center gap-2 rounded-xl border border-dashed border-slate-300 bg-slate-50 p-6 text-center"
         style={{ minHeight: props.height ?? 360 }}
       >
@@ -42,6 +43,8 @@ export default function ReportMap(props) {
   if (!Map) {
     return (
       <div
+        role="status"
+        aria-live="polite"
         className="relative overflow-hidden rounded-xl border border-slate-200 bg-slate-100"
         style={{ height: props.height ?? 360 }}
         aria-label="Loading map"

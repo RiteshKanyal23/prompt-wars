@@ -11,30 +11,35 @@ import Track from '@/pages/Track';
 import TrackDetail from '@/pages/TrackDetail';
 import NotFound from '@/pages/NotFound';
 import { ToastProvider } from '@/app/providers';
+import ErrorBoundary from '@/app/ErrorBoundary';
+import ScrollToTop from '@/app/ScrollToTop';
 
 export default function App() {
   return (
     <BrowserRouter>
-      <ToastProvider>
-        <Routes>
-          <Route element={<AppLayout />}>
-            <Route index element={<Home />} />
-            <Route path="report" element={<ReportIssue />} />
-            <Route path="analysis" element={<Analysis />} />
-            <Route path="analysis/:id" element={<AnalysisDetail />} />
-            <Route path="dashboard" element={<Dashboard />} />
-            <Route path="track" element={<Track />} />
-            <Route path="track/:code" element={<TrackDetail />} />
-            <Route path="404" element={<NotFound />} />
-            <Route path="*" element={<NotFound />} />
-            <Route path="home" element={<Navigate to="/" replace />} />
-          </Route>
+      <ErrorBoundary>
+        <ToastProvider>
+          <ScrollToTop />
+          <Routes>
+            <Route element={<AppLayout />}>
+              <Route index element={<Home />} />
+              <Route path="report" element={<ReportIssue />} />
+              <Route path="analysis" element={<Analysis />} />
+              <Route path="analysis/:id" element={<AnalysisDetail />} />
+              <Route path="dashboard" element={<Dashboard />} />
+              <Route path="track" element={<Track />} />
+              <Route path="track/:code" element={<TrackDetail />} />
+              <Route path="404" element={<NotFound />} />
+              <Route path="*" element={<NotFound />} />
+              <Route path="home" element={<Navigate to="/" replace />} />
+            </Route>
 
-          <Route path="admin" element={<AdminLayout />}>
-            <Route index element={<Admin />} />
-          </Route>
-        </Routes>
-      </ToastProvider>
+            <Route path="admin" element={<AdminLayout />}>
+              <Route index element={<Admin />} />
+            </Route>
+          </Routes>
+        </ToastProvider>
+      </ErrorBoundary>
     </BrowserRouter>
   );
 }

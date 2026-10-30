@@ -5,7 +5,8 @@
 export function toUserMessage(error) {
   if (!error) return 'Something went wrong. Please try again.';
 
-  const code = error.code ?? error.status;
+  const rawCode = error.code ?? error.status;
+  const code = rawCode === undefined || rawCode === null ? '' : String(rawCode);
   const message = String(error.message ?? '');
 
   if (code === '23505') return 'That tracking code was already used. Please retry.';

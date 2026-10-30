@@ -212,6 +212,12 @@ export default function Dashboard() {
                   ))}
                 </FilterSelect>
               </div>
+
+              <p role="status" aria-live="polite" className="sr-only">
+                {loading
+                  ? 'Loading reports'
+                  : `Showing ${filtered.length} of ${reports.length} reports`}
+              </p>
             </Card>
 
             <div className="mt-6 grid grid-cols-2 gap-3 sm:grid-cols-3 xl:grid-cols-5">

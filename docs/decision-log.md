@@ -135,7 +135,7 @@ Affects: files/sections updated
 | 5 | Unknown id shows a lookup, not a crash | `AnalysisDetail` falls back to `EmptyState` with links to `/analysis`, `/dashboard` and `/report`; `routes.smoke.test.js` covers the routed pages | Pass |
 | 6 | Page works at 360 px with stacked cards | Detail page is a single column below `lg`; header, factor table and duplicate bars wrap rather than scroll horizontally. Manual check at 360/390 px | Pass |
 | 7 | Copy summary uses only stored fields | `analysis.test.js` asserts `buildCopySummary()` output order, the `rules-v1` footer and clean degradation when `ai` is missing | Pass |
-| 8 | Build, lint, tests | `test` 86 passed in 10 files · `lint` 0 problems · `build` passes with lazy charts and split vendor chunks | Pass |
+| 8 | Build, lint, tests | `test` 127 passed in 15 files · `lint` 0 problems · `build` passes with lazy charts and split vendor chunks | Pass |
 
 **G5 status: PASSED — 30 October 2026.** The analysis page is the explainability core and every claim is either rendered from stored fields or asserted by a unit test. No image analysis and no accuracy percentages are claimed. Metrics recorded in `phases.md` §9. Next gate: G6 (dashboard).
 
@@ -154,7 +154,7 @@ Affects: files/sections updated
 | 5 | Brief contains count, category mix, owner, action and MOCKED note | `buildActionBrief` asserted in `ai.test.js`: title contains the cluster label, pattern contains the report count, risk contains high-priority count, `mocked` matches "recommendation only" | Pass |
 | 6 | No horizontal scroll at 360 px; map has a list alternative | Tables are `hidden sm:block` and replaced by stacked `<ul>` cards on mobile; `DashboardReportTable` is the explicit list alternative | Pass |
 | 7 | Charts stay out of the first paint | `DashboardCharts` is `React.lazy` + `Suspense`; build emits a separate 416 kB charts chunk instead of loading Recharts on every route | Pass |
-| 8 | Build, lint, tests | `test` 86 passed in 10 files · `lint` 0 problems · `build` passes, no >500 kB warning | Pass |
+| 8 | Build, lint, tests | `test` 127 passed in 15 files · `lint` 0 problems · `build` passes, no >500 kB warning | Pass |
 
 **G6 status: PASSED — 30 October 2026.** The dashboard answers "where is the problem worst and why" from a single filtered dataset. Charts are static by design and every visual has a text/table equivalent. Metrics recorded in `phases.md` §10. Next gate: G7 (admin workflow).
 
@@ -175,9 +175,28 @@ Affects: files/sections updated
 | 7 | No direct repository calls from components | Components and hooks import only `@/services`; `src/services/index.js` is the single adapter switch (`local` ↔ `supabase`) | Pass |
 | 8 | CSV export is formula-injection safe | `csv.test.js` asserts `escapeCsvCell()` prefixes `=`, `+`, `-`, `@`, tab and CR and double-quotes commas/newlines | Pass |
 | 9 | Invalid transitions are disabled and guarded | `workflow.js` `assertTransition()` throws `INVALID_TRANSITION`; the repository calls it, so a direct call cannot bypass the state machine | Pass |
-| 10 | Build, lint, tests | `test` 86 passed in 10 files · `lint` 0 problems · `build` passes | Pass |
+| 10 | Build, lint, tests | `test` 127 passed in 15 files · `lint` 0 problems · `build` passes | Pass |
 
 **G7 status: PASSED — 30 October 2026.** The operator loop is complete and every mutation goes through the guarded repository, so the citizen timeline is always the source of truth. CSV export is client-side and hardened against spreadsheet injection. Metrics recorded in `phases.md` §11. Next gate: G8 (demo readiness).
+
+## 2i. G8 — Demo readiness sign-off
+
+**Gate question:** is it demo-ready?
+
+| # | G8 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | Clean-clone install, dev server and build | `package-lock.json` and `.env.example` are tracked; a clean export installs, builds and serves the dev/preview bundle | Pass |
+| 2 | Preview serves the SPA and assets | `npm run preview` returns HTTP 200 for `/`, `/dashboard`, `/admin`, `/track/CP-7K2M9Q`, JS, CSS and favicon | Pass |
+| 3 | No console errors on any route | Headless Chrome (CDP) over 9 routes: 0 console errors, 0 exceptions, 0 failed requests | Pass |
+| 4 | Responsive at every required width | 6 widths (360–1440) × 6 routes: 36/36 checks show no horizontal scroll | Pass |
+| 5 | Accessible names and keyboard dialogs | All form controls labelled, all buttons/links named, all images have `alt`; drawer focus moves inside and `Escape` closes it | Pass |
+| 6 | Core flow works without external network | Google Fonts and OSM tile hosts blocked: submit → analysis → track and admin drawer still pass with 0 console errors; map falls back to placeholder/table | Pass |
+| 7 | Honesty labels match implementation | Footer mode badge, "photo never analysed" copy, model card and mock/dispatch limitations all present and tested by SSR smoke pass | Pass |
+| 8 | Full journey under five minutes, twice | Script and stopwatch log prepared in `docs/demo-rehearsal.md`; two human runs still pending | **Pending** |
+| 9 | Lint, test, build | `test` 127 passed in 15 files · `lint` 0 problems · `build` passes with lazy charts chunk | Pass |
+
+**G8 status: CONDITIONALLY PASSED — 30 October 2026.** Every automatable gate criterion passes, including a real-browser console, responsiveness, accessibility and blocked-network audit. The gate is not claimed as fully signed off: P8-T7 (two consecutive stopwatch rehearsals) and the narrated backup video in P8-T10 require the presenter and remain open in `phases.md`. The runbook is [`demo-rehearsal.md`](./demo-rehearsal.md).
+
 
 ---
 
@@ -326,4 +345,4 @@ The architectural decisions with full trade-off analysis live in [`architecture.
 
 ---
 
-*End of decision log. Next entry: G8 sign-off after Phase 8.*
+*End of decision log. G8 is conditionally passed; complete P8-T7 and the P8-T10 video, then change the status above.*

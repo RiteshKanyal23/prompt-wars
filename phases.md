@@ -484,16 +484,17 @@ Cut CSV export and the Hotspots tab. Keep Queue, detail drawer, assignment, stat
 
 ### Tasks
 
-- [ ] **P8-T1** Audit every route for loading, empty and error states.
-- [ ] **P8-T2** Keyboard-only citizen flow; focus rings; modal ESC/focus trap.
-- [ ] **P8-T3** Responsive QA at 360, 390, 768, 1024, 1366, 1440.
-- [ ] **P8-T4** Console audit: zero errors, no missing assets, no failed requests except optional tiles.
-- [ ] **P8-T5** Add honesty labels: demo mode, photo not analysed, mocked notifications/dispatch.
+- [x] **P8-T1** Audit every route for loading, empty and error states. *(SSR smoke test plus a headless-Chrome pass over 9 routes; global render fallback added in `src/app/ErrorBoundary.jsx`.)*
+- [x] **P8-T2** Keyboard-only citizen flow; focus rings; modal ESC/focus trap. *(Native form controls, `:focus-visible` rings, shared `useFocusTrap`; headless pass verified drawer focus moves inside and `Escape` closes it.)*
+- [x] **P8-T3** Responsive QA at 360, 390, 768, 1024, 1366, 1440. *(6 widths × 6 routes: 36/36 with no horizontal scroll.)*
+- [x] **P8-T4** Console audit: zero errors, no missing assets, no failed requests except optional tiles. *(9 routes: 0 console errors, 0 exceptions, 0 failed requests; repeated with Google Fonts and OSM tiles blocked.)*
+- [x] **P8-T5** Add honesty labels: demo mode, photo not analysed, mocked notifications/dispatch. *(Footer mode badge, photo captions on report/track, model card and limitations section.)*
 - [x] **P8-T6** Write `README.md`: setup, architecture, AI approach, demo script, limitations.
-- [ ] **P8-T7** Reset seed; run the full demo twice with a timer.
-- [ ] **P8-T8** Test offline/airplane mode for the core flow.
-- [ ] **P8-T9** `npm run lint`, `npm run test`, `npm run build`, `npm run preview`.
-- [ ] **P8-T10** Tag `v0.1.0-hackathon`; record the backup demo video.
+- [ ] **P8-T7** Reset seed; run the full demo twice with a timer. *(Script and log ready in [`docs/demo-rehearsal.md`](docs/demo-rehearsal.md) §5; the two presenter stopwatch runs are still pending.)*
+- [x] **P8-T8** Test offline/airplane mode for the core flow. *(External font and tile hosts blocked in headless Chrome: submit → analysis → track and the admin drawer still pass with 0 console errors; tiles degrade gracefully.)*
+- [x] **P8-T9** `npm run lint`, `npm run test`, `npm run build`, `npm run preview`. *(127 tests in 15 files, lint clean, build passes, preview serves the SPA and assets with HTTP 200.)*
+- [ ] **P8-T10** Tag `v0.1.0-hackathon`; record the backup demo video. *(Tag created after the Phase 8 commit; the narrated backup video still requires the presenter.)*
+
 
 ### Deliverables
 
@@ -504,14 +505,17 @@ Cut CSV export and the Hotspots tab. Keep Queue, detail drawer, assignment, stat
 
 ### Acceptance gate G8
 
-- [ ] `npm install && npm run dev` works from a clean clone.
-- [ ] `npm run build` and `npm run preview` work.
-- [ ] `npm run test` passes.
-- [ ] `npm run lint` passes (or only documented warnings).
-- [ ] Full journey <5 minutes, twice in a row.
-- [ ] No console errors on any route.
-- [ ] Honesty note matches the actual implementation.
-- [ ] Demo works with no network (tiles may be grey).
+- [x] `npm install && npm run dev` works from a clean clone.
+- [x] `npm run build` and `npm run preview` work.
+- [x] `npm run test` passes.
+- [x] `npm run lint` passes (or only documented warnings).
+- [ ] Full journey <5 minutes, twice in a row. *(Presenter stopwatch runs pending; script and log in [`docs/demo-rehearsal.md`](docs/demo-rehearsal.md). Automated proxy journey completes in seconds but does not validate the talk track.)*
+- [x] No console errors on any route.
+- [x] Honesty note matches the actual implementation.
+- [x] Demo works with no network (tiles may be grey).
+
+**G8 status: CONDITIONALLY PASSED — 30 October 2026.** All automated, offline, accessibility and responsiveness checks pass, and the preview build serves correctly. The only unmet criterion is two consecutive human stopwatch runs under five minutes (P8-T7), plus the narrated backup video (P8-T10). These require the presenter's machine and voice; they are **not** claimed as done. Evidence and the runbook live in [`docs/demo-rehearsal.md`](docs/demo-rehearsal.md).
+
 
 ### Demo checkpoint C8
 

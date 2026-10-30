@@ -189,7 +189,11 @@ export default function AdminReportsTab({ reports, loading, onSelect }) {
             ))}
           </ul>
 
-          <div className="border-t border-slate-200 px-4 py-2.5 text-xs text-slate-500">
+          <div
+            role="status"
+            aria-live="polite"
+            className="border-t border-slate-200 px-4 py-2.5 text-xs text-slate-500"
+          >
             {filtered.length} of {reports.length} reports
           </div>
         </>

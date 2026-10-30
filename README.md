@@ -470,6 +470,8 @@ Current output:
 
 **Backup plan:** the build defaults to local mode. If a Supabase demo is attempted and the network fails, set `VITE_DATA_MODE=local`, reload, and everything except map tiles still works. The footer badge always states the active mode.
 
+The full pre-flight checklist, recovery cards, judge-style answers and stopwatch log are in [`docs/demo-rehearsal.md`](docs/demo-rehearsal.md).
+
 ---
 
 ## 10. Testing and quality
@@ -484,25 +486,28 @@ Current baseline (30 October 2026):
 
 | Check | Result |
 | --- | --- |
-| Unit + SSR smoke tests | **86 passed in 10 files** |
+| Unit + SSR smoke tests | **127 passed in 15 files** |
 | ESLint | **0 problems** |
 | Production build | Passes — code-split into vendor, Supabase and route chunks; largest chunk 416 kB (113 kB gzip) |
+| Browser QA (headless Chrome) | 9 routes with **0 console errors**; 36/36 width checks with no horizontal scroll; offline core flow passes with fonts/tiles blocked |
 | Seed evaluation | **G3 PASS** — 8/8 duplicate groups, 3/3 P0 in top 5, 2 clusters |
 
 The suite covers:
 
 - AI classification, band boundaries, duplicate scoring, cluster formation, determinism and the hazard floor (`src/services/ai/__tests__/ai.test.js`);
 - repository create/read/update, tracking-code lookup, public vs internal events and reset (`src/services/local/__tests__/localRepository.test.js`);
-- validation limits and tracking-code formats (`src/lib/__tests__/validation.test.js`);
-- workflow transitions, CSV escaping and report statistics;
+- validation limits and tracking-code formats (`validation.test.js`, `referenceCode.test.js`);
+- workflow transitions, CSV escaping, report statistics and area grouping (`workflow.test.js`, `csv.test.js`, `reportStats.test.js`);
+- geo maths, date/number formatting and error-copy mapping (`geo.test.js`, `format.test.js`, `errors.test.js`);
+- Supabase snake_case ↔ camelCase mappers (`mappers.test.js`);
 - analysis selectors and tab keyboard navigation (`analysis.test.js`, `tabs.test.js`);
 - SSR rendering of every route (`src/app/__tests__/routes.smoke.test.js`).
 
-**Bundle note:** the build splits React, the dormant Supabase SDK, Leaflet and the chart-heavy dashboard into separate chunks. The initial app chunk is ~254 kB (65 kB gzip); the ~416 kB chart chunk loads only on the dashboard route.
+**Bundle note:** the build splits React, the dormant Supabase SDK, Leaflet and the chart-heavy dashboard into separate chunks. The initial app chunk is ~257 kB (66 kB gzip); the ~416 kB chart chunk loads only on the dashboard route.
 
 ### Phase gates
 
-Implementation is complete through the operator workflow. Gates **G0–G7** are signed off with evidence in [`docs/decision-log.md`](docs/decision-log.md). The remaining P8 QA items — final cross-device pass, timed rehearsal and demo recording — are tracked in [`phases.md`](phases.md).
+Implementation is complete through the operator workflow. Gates **G0–G7** are signed off with evidence in [`docs/decision-log.md`](docs/decision-log.md). **G8 is conditionally passed:** all automated, accessibility, responsive and offline checks are green, while the two timed presenter rehearsals and the narrated backup video remain manual follow-ups tracked in [`phases.md`](phases.md) and [`docs/demo-rehearsal.md`](docs/demo-rehearsal.md).
 
 ---
 
@@ -647,6 +652,7 @@ The architecture keeps the demo UI intact through this evolution: the repository
 | [`architecture.md`](architecture.md) | C4 views, data flows, security model, deployment, ADRs |
 | [`phases.md`](phases.md) | 8-hour phase plan, gates G0–G8, checkpoints, cut order, post-hackathon phases |
 | [`docs/decision-log.md`](docs/decision-log.md) | Scope-lock decisions, frozen constants, gate sign-offs, change policy |
+| [`docs/demo-rehearsal.md`](docs/demo-rehearsal.md) | Pre-flight checklist, timed beat sheet, recovery cards, rehearsal log |
 
 If implementation and documentation disagree, the decision log and the code are the record of what actually shipped.
 

@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest';
 import { buildSeedReports } from '@/services/local/seed';
 import { computeClusters } from '@/services/ai/clusters';
-import { filterReports, groupByArea, summarizeReports, countBy } from '@/lib/reportStats';
+import { filterReports, groupByArea, summarizeReports, countBy, areaLabel } from '@/lib/reportStats';
 
 const NOW = new Date('2026-10-30T12:00:00.000Z');
 const reports = buildSeedReports(NOW);
@@ -124,5 +124,32 @@ describe('groupByArea', () => {
   it('respects the minimum-count option', () => {
     expect(groupByArea(reports, { minCount: 6 })).toHaveLength(1);
     expect(groupByArea(reports, { minCount: 10 })).toHaveLength(0);
+  });
+});
+
+describe('countBy and areaLabel', () => {
+  it('counts by an arbitrary key', () => {
+    const rows = [{ status: 'open' }, { status: 'open' }, { status: 'resolved' }];
+    expect(countBy(rows, (row) => row.status)).toEqual({ open: 2, resolved: 1 });
+    expect(countBy([], (row) => row.status)).toEqual({});
+  });
+
+  it('picks the most common trailing location segment', () => {
+    const rows = [
+      { locationLabel: '4th Cross, Sector 12' },
+      { locationLabel: 'School gate, Sector 12' },
+      { locationLabel: 'Ward 4 Market entrance' },
+    ];
+    expect(areaLabel(rows)).toBe('Sector 12');
+  });
+
+  it('prefers the shortest label on a count tie and handles empty input', () => {
+    expect(
+      areaLabel([
+        { locationLabel: 'Ward 4 Market entrance' },
+        { locationLabel: 'Ward 4 Market' },
+      ]),
+    ).toBe('Ward 4 Market');
+    expect(areaLabel([])).toBe('Unnamed area');
   });
 });
