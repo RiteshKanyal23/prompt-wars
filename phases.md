@@ -338,16 +338,16 @@ Cut image upload (keep the field labelled "coming soon" or remove it) and the dr
 
 ### Tasks
 
-- [ ] **P5-T1** Build `Analysis` overview: pipeline strip, latest analysis, recent table, model card.
-- [ ] **P5-T2** Build `AnalysisDetail` header: code, status, priority, category, time, location.
-- [ ] **P5-T3** Add original description + photo evidence disclaimer + mini-map.
-- [ ] **P5-T4** Add `AiSummaryCard`, category confidence + alternatives.
-- [ ] **P5-T5** Add `PriorityFactors` table with points, reasons and verdict.
-- [ ] **P5-T6** Add `DuplicateList` with component bars, reasons and "Open comparison".
-- [ ] **P5-T7** Add `HotspotCard` with count, category mix, radius, trend.
-- [ ] **P5-T8** Add model card line: `rules-v1 · deterministic · N ms`.
-- [ ] **P5-T9** Add low-confidence warning, no-cluster message, unknown-id state.
-- [ ] **P5-T10** Add "Copy summary" and links to tracking/admin.
+- [x] **P5-T1** Build `Analysis` overview: pipeline strip, latest analysis, recent table, model card.
+- [x] **P5-T2** Build `AnalysisDetail` header: code, status, priority, category, time, location.
+- [x] **P5-T3** Add original description + photo evidence disclaimer + mini-map.
+- [x] **P5-T4** Add `AiSummaryCard`, category confidence + alternatives.
+- [x] **P5-T5** Add `PriorityFactors` table with points, reasons and verdict.
+- [x] **P5-T6** Add `DuplicateList` with component bars, reasons and "Open comparison".
+- [x] **P5-T7** Add `HotspotCard` with count, category mix, radius, trend.
+- [x] **P5-T8** Add model card line: `rules-v1 · deterministic · N ms`.
+- [x] **P5-T9** Add low-confidence warning, no-cluster message, unknown-id state.
+- [x] **P5-T10** Add "Copy summary" and links to tracking/admin.
 
 ### Deliverables
 
@@ -359,12 +359,14 @@ Cut image upload (keep the field labelled "coming soon" or remove it) and the dr
 
 ### Acceptance gate G5
 
-- [ ] Every AI field from the pipeline is rendered somewhere.
-- [ ] Factor points sum to the displayed score.
-- [ ] Low confidence (<0.45) shows the review notice.
-- [ ] No cluster shows the "needs 3 related reports" message.
-- [ ] Unknown id shows a lookup, not a crash.
-- [ ] Page works at 360 px with stacked cards.
+- [x] Every AI field from the pipeline is rendered somewhere.
+- [x] Factor points sum to the displayed score.
+- [x] Low confidence (<0.45) shows the review notice.
+- [x] No cluster shows the "needs 3 related reports" message.
+- [x] Unknown id shows a lookup, not a crash.
+- [x] Page works at 360 px with stacked cards.
+
+**G5 result: PASSED (30 October 2026).** `AnalysisDetail` renders the stored classification (confidence + alternatives), priority factors, duplicate components, cluster membership and model card; `AiSummaryCard` shows the review badge and explanatory note when `ai.lowConfidence` is set, and `HotspotMembershipCard` explains the "not part of a hotspot yet" case. Factor arithmetic is asserted twice: `ai.test.js` (points sum to score, P0 floor) and `analysis.test.js` (`sumFactorPoints`, `factorsMatchScore`). Unknown ids fall through to `EmptyState` with links back to `/analysis`, `/dashboard` and `/report`. Recorded in `docs/decision-log.md`.
 
 ### Demo checkpoint C5
 
@@ -384,16 +386,16 @@ Cut the alternatives chart and the copy button. Keep the factor table, duplicate
 
 ### Tasks
 
-- [ ] **P6-T1** Build KPI row: total, open, P0+P1, resolved (30 d), duplicate rate.
-- [ ] **P6-T2** Build `MapView` with priority pins, hotspot circles, popups, legend.
-- [ ] **P6-T3** Build "Fix first" ranked list with expandable factors.
-- [ ] **P6-T4** Build category bar chart, priority donut, 14-day trend area chart.
-- [ ] **P6-T5** Build hotspot cards with count, mix, avg priority, trend, brief button.
-- [ ] **P6-T6** Build action brief modal with copy button and MOCKED note.
-- [ ] **P6-T7** Add filters (category, status, band, search) with URL params.
-- [ ] **P6-T8** Add loading skeletons, empty filter state and error retry.
-- [ ] **P6-T9** Add "About this data" honesty footer (42 synthetic reports).
-- [ ] **P6-T10** Verify map/list consistency and mobile stacking.
+- [x] **P6-T1** Build KPI row: total, open, P0+P1, resolved (30 d), duplicate rate.
+- [x] **P6-T2** Build `MapView` with priority pins, hotspot circles, popups, legend.
+- [x] **P6-T3** Build "Fix first" ranked list with expandable factors.
+- [x] **P6-T4** Build category bar chart, priority donut, 14-day trend area chart.
+- [x] **P6-T5** Build hotspot cards with count, mix, avg priority, trend, brief button.
+- [x] **P6-T6** Build action brief modal with copy button and MOCKED note.
+- [x] **P6-T7** Add filters (category, status, band, search) with URL params.
+- [x] **P6-T8** Add loading skeletons, empty filter state and error retry.
+- [x] **P6-T9** Add "About this data" honesty footer (42 synthetic reports).
+- [x] **P6-T10** Verify map/list consistency and mobile stacking.
 
 ### Deliverables
 
@@ -405,12 +407,14 @@ Cut the alternatives chart and the copy button. Keep the factor table, duplicate
 
 ### Acceptance gate G6
 
-- [ ] Sector 12 and Ward 4 market clusters are visible.
-- [ ] Clicking a marker opens a popup with a working analysis link.
-- [ ] KPI values match a manual count on the same filters.
-- [ ] Charts render with no animation and handle empty data.
-- [ ] Brief contains count, category mix, owner, action and MOCKED note.
-- [ ] No horizontal scroll at 360 px; map has a list alternative.
+- [x] Sector 12 and Ward 4 market clusters are visible.
+- [x] Clicking a marker opens a popup with a working analysis link.
+- [x] KPI values match a manual count on the same filters.
+- [x] Charts render with no animation and handle empty data.
+- [x] Brief contains count, category mix, owner, action and MOCKED note.
+- [x] No horizontal scroll at 360 px; map has a list alternative.
+
+**G6 result: PASSED (30 October 2026).** The seeded corpus produces exactly two clusters — Sector 12 with 7 reports and Ward 4 Market with 5 — asserted in `ai.test.js` and `reportStats.test.js`. KPIs, map pins, charts, ranking and hotspot cards now all read from one `filterReports()` array, so a filter cannot desynchronise the numbers (`reportStats.test.js` asserts the hotspot card count equals the filtered subset count, e.g. Sector 12 water = 5). Charts have `isAnimationActive={false}`, `role="img"` summaries, `sr-only` captions and empty-data branches; `DashboardReportTable` is the list alternative. `buildActionBrief` is asserted to include the report count, high-priority count and the "recommendation only" MOCKED note. Recorded in `docs/decision-log.md`.
 
 ### Demo checkpoint C6
 
@@ -430,17 +434,17 @@ Cut the trend chart and donut; keep the bar chart, map, KPIs and hotspot cards. 
 
 ### Tasks
 
-- [ ] **P7-T1** Build Admin tabs: Queue, Duplicates, Hotspots, Reports.
-- [ ] **P7-T2** Build priority-sorted queue (table desktop, cards mobile).
-- [ ] **P7-T3** Build detail drawer with AI summary, factors, map, history.
-- [ ] **P7-T4** Add department assignment + SLA default by band.
-- [ ] **P7-T5** Add status stepper with `ALLOWED_TRANSITIONS` guard.
-- [ ] **P7-T6** Require a public note on resolve; support internal notes.
-- [ ] **P7-T7** Build duplicate review with side-by-side text and component scores.
-- [ ] **P7-T8** Implement confirm/reject merge with events on both reports.
-- [ ] **P7-T9** Add Hotspots tab with brief generation.
-- [ ] **P7-T10** Add Reports tab search + CSV export (formula-injection safe).
-- [ ] **P7-T11** Verify tracking page reflects every public event immediately.
+- [x] **P7-T1** Build Admin tabs: Queue, Duplicates, Hotspots, Reports.
+- [x] **P7-T2** Build priority-sorted queue (table desktop, cards mobile).
+- [x] **P7-T3** Build detail drawer with AI summary, factors, map, history.
+- [x] **P7-T4** Add department assignment + SLA default by band.
+- [x] **P7-T5** Add status stepper with `ALLOWED_TRANSITIONS` guard.
+- [x] **P7-T6** Require a public note on resolve; support internal notes.
+- [x] **P7-T7** Build duplicate review with side-by-side text and component scores.
+- [x] **P7-T8** Implement confirm/reject merge with events on both reports.
+- [x] **P7-T9** Add Hotspots tab with brief generation.
+- [x] **P7-T10** Add Reports tab search + CSV export (formula-injection safe).
+- [x] **P7-T11** Verify tracking page reflects every public event immediately.
 
 ### Deliverables
 
@@ -452,13 +456,15 @@ Cut the trend chart and donut; keep the bar chart, map, KPIs and hotspot cards. 
 
 ### Acceptance gate G7
 
-- [ ] Assign a report → status becomes `assigned` and an event appears.
-- [ ] Move to `in_progress` → public event appears on tracking.
-- [ ] Resolve without a note is blocked; with a note it succeeds.
-- [ ] Confirm a duplicate → child becomes `duplicate`, parent gains an event.
-- [ ] Reject a duplicate → both reports remain open.
-- [ ] Refresh preserves all changes.
-- [ ] No direct repository calls from components.
+- [x] Assign a report → status becomes `assigned` and an event appears.
+- [x] Move to `in_progress` → public event appears on tracking.
+- [x] Resolve without a note is blocked; with a note it succeeds.
+- [x] Confirm a duplicate → child becomes `duplicate`, parent gains an event.
+- [x] Reject a duplicate → both reports remain open.
+- [x] Refresh preserves all changes.
+- [x] No direct repository calls from components.
+
+**G7 result: PASSED (30 October 2026).** `src/lib/workflow.js` is the single guard used by both the drawer and the repositories; `workflow.test.js` and `localRepository.test.js` cover valid/invalid moves, the resolve-note requirement, duplicate confirm/reject side effects, public/internal event filtering and persistence. The Admin console keeps all state in the repository and re-reads it after every mutation, so a refresh replays the same timeline. The Reports tab exports through `escapeCsvCell()`, which prefixes `=`, `+`, `-`, `@`, tab and CR (`csv.test.js`), blocking spreadsheet formula injection. Components import only `@/services`, never an adapter. Recorded in `docs/decision-log.md`.
 
 ### Demo checkpoint C7
 

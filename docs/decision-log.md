@@ -122,6 +122,65 @@ Affects: files/sections updated
 
 ---
 
+## 2f. G5 — AI analysis UI sign-off
+
+**Gate question:** can a judge trace every AI number to its source in under 30 seconds?
+
+| # | G5 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | Every AI field is rendered somewhere | `AnalysisDetail` renders category + confidence + alternatives (`AiSummaryCard`), the factor table (`PriorityFactors`), duplicate components (`DuplicateList`), cluster membership (`HotspotMembershipCard`) and the model card (`rules-v1 · deterministic · N ms`) | Pass |
+| 2 | Factor points sum to the displayed score | `ai.test.js` asserts factor sum == score for normal and hazard-escalated reports; `analysis.test.js` covers `sumFactorPoints()` and `factorsMatchScore()`, including a mismatched score | Pass |
+| 3 | Low confidence (<0.45) shows the review notice | `classify.js` sets `lowConfidence: confidence < 0.45`; `AiSummaryCard` swaps the badge to "Low confidence" and renders the amber review note with the reason | Pass |
+| 4 | No cluster shows the "needs 3 related reports" message | `HotspotMembershipCard` renders the not-yet-clustered explanation instead of an empty card; `ai.test.js` asserts clusters require 3 reports | Pass |
+| 5 | Unknown id shows a lookup, not a crash | `AnalysisDetail` falls back to `EmptyState` with links to `/analysis`, `/dashboard` and `/report`; `routes.smoke.test.js` covers the routed pages | Pass |
+| 6 | Page works at 360 px with stacked cards | Detail page is a single column below `lg`; header, factor table and duplicate bars wrap rather than scroll horizontally. Manual check at 360/390 px | Pass |
+| 7 | Copy summary uses only stored fields | `analysis.test.js` asserts `buildCopySummary()` output order, the `rules-v1` footer and clean degradation when `ai` is missing | Pass |
+| 8 | Build, lint, tests | `test` 86 passed in 10 files · `lint` 0 problems · `build` passes with lazy charts and split vendor chunks | Pass |
+
+**G5 status: PASSED — 30 October 2026.** The analysis page is the explainability core and every claim is either rendered from stored fields or asserted by a unit test. No image analysis and no accuracy percentages are claimed. Metrics recorded in `phases.md` §9. Next gate: G6 (dashboard).
+
+---
+
+## 2g. G6 — Dashboard, map and hotspots sign-off
+
+**Gate question:** are patterns visible that a list hides?
+
+| # | G6 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | Sector 12 and Ward 4 Market clusters are visible | `ai.test.js` and `reportStats.test.js` assert exactly 2 clusters on the seed — Sector 12 (7 reports) and Ward 4 Market (5); both render as map circles and hotspot cards | Pass |
+| 2 | Clicking a marker opens a popup with a working analysis link | `ReportMapInner` popups link to `/analysis/:id`; the map degrades to the `DashboardReportTable` list when tiles fail | Pass |
+| 3 | KPI values match a manual count on the same filters | KPIs, pins, charts, ranking and hotspot cards all derive from one `filterReports()` array; `reportStats.test.js` asserts the hotspot card count equals the filtered subset (Sector 12 water = 5) | Pass |
+| 4 | Charts render with no animation and handle empty data | `DashboardCharts` sets `isAnimationActive={false}` on Bar/Pie/Area, exposes `role="img"` summaries and renders empty-data branches | Pass |
+| 5 | Brief contains count, category mix, owner, action and MOCKED note | `buildActionBrief` asserted in `ai.test.js`: title contains the cluster label, pattern contains the report count, risk contains high-priority count, `mocked` matches "recommendation only" | Pass |
+| 6 | No horizontal scroll at 360 px; map has a list alternative | Tables are `hidden sm:block` and replaced by stacked `<ul>` cards on mobile; `DashboardReportTable` is the explicit list alternative | Pass |
+| 7 | Charts stay out of the first paint | `DashboardCharts` is `React.lazy` + `Suspense`; build emits a separate 416 kB charts chunk instead of loading Recharts on every route | Pass |
+| 8 | Build, lint, tests | `test` 86 passed in 10 files · `lint` 0 problems · `build` passes, no >500 kB warning | Pass |
+
+**G6 status: PASSED — 30 October 2026.** The dashboard answers "where is the problem worst and why" from a single filtered dataset. Charts are static by design and every visual has a text/table equivalent. Metrics recorded in `phases.md` §10. Next gate: G7 (admin workflow).
+
+---
+
+## 2h. G7 — Admin workflow sign-off
+
+**Gate question:** can an operator take a report from submitted to resolved, with a public trail?
+
+| # | G7 criterion | Evidence | Result |
+| --- | --- | --- | --- |
+| 1 | Assign a report → status becomes `assigned` and an event appears | `AdminReportDrawer.handleAssign` writes department/owner/SLA, promotes `submitted`/`triaged` to `assigned` and posts a public `status_changed` event | Pass |
+| 2 | Move to `in_progress` → public event appears on tracking | `localRepository.test.js` asserts transitions persist with events; `TrackDetail` reads `publicOnly: true` and re-queries after each mutation | Pass |
+| 3 | Resolve without a note is blocked; with a note it succeeds | `workflow.test.js` covers the resolve-note requirement; the drawer disables resolve until a public note is entered | Pass |
+| 4 | Confirm a duplicate → child becomes `duplicate`, parent gains an event | `localRepository.test.js` confirms both reports receive events and the child status becomes `duplicate`; merge is human-only (D-005) | Pass |
+| 5 | Reject a duplicate → both reports remain open | `localRepository.test.js` asserts reject leaves both statuses untouched and records the decision | Pass |
+| 6 | Refresh preserves all changes | All state lives in `civicpulse:v1:*`; `localRepository.test.js` re-reads after create/update/reset and asserts the same rows | Pass |
+| 7 | No direct repository calls from components | Components and hooks import only `@/services`; `src/services/index.js` is the single adapter switch (`local` ↔ `supabase`) | Pass |
+| 8 | CSV export is formula-injection safe | `csv.test.js` asserts `escapeCsvCell()` prefixes `=`, `+`, `-`, `@`, tab and CR and double-quotes commas/newlines | Pass |
+| 9 | Invalid transitions are disabled and guarded | `workflow.js` `assertTransition()` throws `INVALID_TRANSITION`; the repository calls it, so a direct call cannot bypass the state machine | Pass |
+| 10 | Build, lint, tests | `test` 86 passed in 10 files · `lint` 0 problems · `build` passes | Pass |
+
+**G7 status: PASSED — 30 October 2026.** The operator loop is complete and every mutation goes through the guarded repository, so the citizen timeline is always the source of truth. CSV export is client-side and hardened against spreadsheet injection. Metrics recorded in `phases.md` §11. Next gate: G8 (demo readiness).
+
+---
+
 ## 3. Frozen constants
 
 These values may not drift during the build. Changing one requires a new entry here.
@@ -132,7 +191,7 @@ These values may not drift during the build. Changing one requires a new entry h
 | Statuses | 8: `submitted`, `triaged`, `assigned`, `in_progress`, `resolved`, `closed`, `rejected`, `duplicate` | `prd.md` §13 |
 | Priority bands | P0 ≥ 80, P1 60–79, P2 40–59, P3 < 40 | `prd.md` §14 |
 | Worked example | Waterlogging near school = **79 / P1** | `prd.md` §14, `trd.md` §10.5 |
-| Duplicate thresholds | 300 m radius, 21 days, review ≥ 0.68, strong ≥ 0.82 | `trd.md` §10.4 |
+| Duplicate thresholds | 300 m radius, 21 days, review ≥ 0.62 (D-009), strong ≥ 0.82 | `trd.md` §10.4 |
 | Cluster thresholds | 0.003° grid, 30-day window, minimum 3 reports | `trd.md` §10.7 |
 | Tracking code | `CP-XXXXXX`, 6 chars from `ABCDEFGHJKLMNPQRSTUVWXYZ23456789` | `trd.md` §9.2 |
 | AI version string | `rules-v1` | `trd.md` §10.1 |
@@ -267,4 +326,4 @@ The architectural decisions with full trade-off analysis live in [`architecture.
 
 ---
 
-*End of decision log. Next entry: G5 sign-off after Phase 5.*
+*End of decision log. Next entry: G8 sign-off after Phase 8.*
