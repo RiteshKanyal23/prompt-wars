@@ -489,7 +489,7 @@ Cut CSV export and the Hotspots tab. Keep Queue, detail drawer, assignment, stat
 - [ ] **P8-T3** Responsive QA at 360, 390, 768, 1024, 1366, 1440.
 - [ ] **P8-T4** Console audit: zero errors, no missing assets, no failed requests except optional tiles.
 - [ ] **P8-T5** Add honesty labels: demo mode, photo not analysed, mocked notifications/dispatch.
-- [ ] **P8-T6** Write `README.md`: setup, architecture, AI approach, demo script, limitations.
+- [x] **P8-T6** Write `README.md`: setup, architecture, AI approach, demo script, limitations.
 - [ ] **P8-T7** Reset seed; run the full demo twice with a timer.
 - [ ] **P8-T8** Test offline/airplane mode for the core flow.
 - [ ] **P8-T9** `npm run lint`, `npm run test`, `npm run build`, `npm run preview`.
